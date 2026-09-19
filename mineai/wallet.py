@@ -502,8 +502,9 @@ def main() -> None:
         except ValueError as exc:
             raise SystemExit(str(exc))
         print(f"Created wallet: {args.wallet}\nAddress: {address}")
-        print("BACK UP this file (use the 'backup' command) and remember the password: there is no recovery. "
-              f"This is a {params.name} wallet with no monetary value; never reuse a real password.")
+        print("BACK UP this file (use the 'backup' command) and remember the password: there is no recovery.")
+        for line in config.banner_lines(params, "")[1:]:
+            print(line)
         return
 
     if args.cmd == "backup":

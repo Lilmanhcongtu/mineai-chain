@@ -6,7 +6,8 @@ CPU SHA-256 proof of work, Ed25519 wallets, REST API and a local explorer.
 > **Not production software.** No independent audit, only tested on localhost and in simulation.
 > Coins on devnet/testnet have **no monetary value**. There is no mainnet, no presale and nothing to buy.
 
-Status: Milestone 7 (private testnet) — see `PROTOCOL.md` for the exact rules, `TOKENOMICS.md`,
+Status: **0.2.0rc1, public testnet release candidate (not launched)** — see `docs/RELEASE_NOTES.md`, `docs/KNOWN_LIMITATIONS.md`,
+`docs/SECURITY_CHECKLIST.md` and `docs/LAUNCH_CRITERIA.md` first. See `PROTOCOL.md` for the exact rules, `TOKENOMICS.md`,
 `NETWORK.md`, `SECURITY.md` (including known limitations) and `CONTRIBUTING.md`.
 
 ## What changed from V0.1
@@ -20,6 +21,7 @@ Status: Milestone 7 (private testnet) — see `PROTOCOL.md` for the exact rules,
 
 * **Milestone 3:** multi-node P2P (handshake, discovery, tx/block relay, sync, bans) - see `PROTOCOL.md` section 10.
 * **Milestone 4:** cumulative-work chain selection, side chains, orphans, atomic reorganizations, mempool restoration - see `PROTOCOL.md` section 8.
+* **Milestone 8:** release candidate 0.2.0rc1: testnet genesis pinned and its consensus parameters frozen by a fingerprint test, TESTNET labelling on every tool, release/install/troubleshooting documents, security checklist, launch criteria, a release script that produces checksummed artifacts. Linux scripts exist but are **unverified**; artifacts are **unsigned**.
 * **Milestone 7:** a private five-node test network (`privnet` profile, 5 s blocks) driven by `scripts\private_testnet.py`: hard crashes, rolling restarts, partitions, a wiped-node resync, a transaction flood, P2P attacks, database corruption and hashrate changes, with a written report in `docs/reports/`. Adds `/metrics` (Prometheus) and `/api/v1/metrics`, and `mineai check` to verify a database offline. See `docs/PRIVATE_TESTNET.md`.
 * **Milestone 6:** hardened wallet (locking, auto-lock, verified backup/restore, password change, interactive shell), user-controlled miner behind a pluggable proof-of-work backend, a full read-only explorer, a versioned `/api/v1`, and a Windows package with installer and checksums. RandomX is evaluated in `docs/RANDOMX_EVALUATION.md` and is **not** implemented.
 * **Milestone 5:** numeric difficulty target and per-block retargeting to ~60 s (LWMA over median-filtered timestamps) - see `PROTOCOL.md` section 5.10. Devnet was reset for this change (network id `mineai-devnet-v3`); older devnet databases are refused.

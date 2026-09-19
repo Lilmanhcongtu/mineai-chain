@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import sys
 import time
 from collections import deque
 from pathlib import Path
@@ -417,6 +418,8 @@ def check_main() -> None:
 def main() -> None:
     mlog.configure(config.LOG_LEVEL)
     params = config.get_params()
+    for line in config.banner_lines(params, __version__):
+        print(line, file=sys.stderr, flush=True)
     port = config.PORT or params.default_port
     if config.HOST not in LOCAL_HOSTS:
         logger.warning("binding to a non-local address: mining endpoints stay loopback-only, but the "

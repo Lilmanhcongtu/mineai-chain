@@ -47,4 +47,7 @@ like `password`, `private_key`, `secret`, `mnemonic` or `seed`.
 
 ## Supported versions
 
-Only the current `main` development line.
+Only the current `main` development line; the testnet release candidate is 0.2.0rc1.
+
+Status of the release candidate: see `docs/SECURITY_CHECKLIST.md` (self-assessment, no independent audit) and `docs/KNOWN_LIMITATIONS.md`.
+A vulnerability-reporting contact has **not yet been defined**; it must exist before any public launch.

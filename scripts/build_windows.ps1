@@ -37,7 +37,10 @@ foreach ($tool in "node", "wallet", "miner") {
 }
 Copy-Item "packaging\README-WINDOWS.txt", "packaging\install.ps1", "packaging\uninstall.ps1" $out
 New-Item -ItemType Directory -Force -Path (Join-Path $out "docs") | Out-Null
-Copy-Item README.md, PROTOCOL.md, TOKENOMICS.md, NETWORK.md, SECURITY.md, CONTRIBUTING.md, "docs\RANDOMX_EVALUATION.md" (Join-Path $out "docs")
+Copy-Item README.md, PROTOCOL.md, TOKENOMICS.md, NETWORK.md, SECURITY.md, CONTRIBUTING.md (Join-Path $out "docs")
+foreach ($d in "RELEASE_NOTES", "INSTALL", "TROUBLESHOOTING", "KNOWN_LIMITATIONS", "SECURITY_CHECKLIST", "TESTNET_GENESIS", "LAUNCH_CRITERIA", "RANDOMX_EVALUATION") {
+    Copy-Item "docs\$d.md" (Join-Path $out "docs")
+}
 
 # checksums of every file, then of the zip
 $files = Get-ChildItem $out -Recurse -File | Where-Object { $_.Name -ne "SHA256SUMS.txt" } | Sort-Object FullName

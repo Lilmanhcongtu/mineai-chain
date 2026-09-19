@@ -106,7 +106,7 @@ TESTNET = NetworkParams(
     default_fee=10_000,
     difficulty=65_536,
     genesis_timestamp=1_767_225_600,
-    genesis_hash="",  # to be pinned when the public testnet genesis is created (Milestone 8)
+    genesis_hash="2ddd2b532e7d313ab4fed3c7ddbba84297d9f35fd040292e2046da471d29d335",  # pinned for the public testnet release candidate (rules frozen; any change = new network id)
     coinbase_maturity=10,
 )
 
@@ -177,6 +177,34 @@ P2P_PORT = int(os.getenv("MINEAI_P2P_PORT", "0")) or None          # None => pro
 P2P_ENABLED = os.getenv("MINEAI_P2P", "1") != "0"
 SEEDS = [s.strip() for s in os.getenv("MINEAI_SEEDS", "").split(",") if s.strip()]
 MAX_PEERS = int(os.getenv("MINEAI_MAX_PEERS", "16"))
+
+
+CONSENSUS_FIELDS = (
+    "network_id", "address_prefix", "block_reward", "max_supply", "min_fee", "difficulty", "min_difficulty",
+    "dynamic_difficulty", "target_spacing", "lwma_window", "genesis_timestamp", "genesis_hash", "coinbase_maturity",
+    "max_regular_txs_per_block", "max_tx_bytes", "max_block_bytes", "mtp_window", "max_future_seconds",
+)
+
+
+def consensus_fingerprint(params: NetworkParams) -> str:
+    """SHA-256 over every parameter that affects block/transaction validity. A network whose rules changed must get a
+    new network id; tests pin this value for each profile so an accidental rule change cannot slip through."""
+    import hashlib
+    import json
+    values = {name: getattr(params, name) for name in CONSENSUS_FIELDS}
+    return hashlib.sha256(json.dumps(values, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+TEST_NETWORKS = ("devnet", "testnet", "privnet")
+
+
+def banner_lines(params: NetworkParams, version: str) -> list[str]:
+    """Text every entry point shows so nobody mistakes a test network for a real one."""
+    if params.name in TEST_NETWORKS:
+        return [f"MineAI {version} - {params.label}",
+                f"This is a TEST network ({params.name}). Its coins have NO monetary value and the network may be",
+                "reset or discarded at any time without notice. Never reuse a real password for a wallet here."]
+    return [f"MineAI {version} - {params.label}"]
 
 
 def db_path_for(params: NetworkParams, data_dir: Path | None = None) -> Path:

@@ -20,7 +20,7 @@
 | target block time | 60 s | 60 s | **5 s** | 60 s |
 | initial / minimum difficulty | 65 536 / 256 | 65 536 / 256 | 16 384 / 256 | 65 536 / 256 |
 | difficulty window | 60 | 60 | 30 | 60 |
-| status | usable locally | genesis not yet created | **private multi-node testing only** | **disabled**, not launched |
+| status | usable locally | **genesis pinned (release candidate)** | **private multi-node testing only** | **disabled**, not launched |
 
 The `network_id` is bound into every transaction signature, txid, coinbase id and block hash, and
 the address prefix is bound into every address checksum. A transaction or block from one network is
@@ -146,8 +146,12 @@ changed meaning together with the header layout, hence the new network id `minea
 
 Height 0, `previous_hash = merkle_root = 0×64`, `difficulty = 0` (no proof of work), `nonce = 0`, no transactions,
 `timestamp = genesis_timestamp` (2026-01-01T00:00:00Z for devnet/testnet). No PoW check, no premine, no coinbase.
-The devnet genesis hash is pinned in `config.py` and by a test:
-`b163bf62f484bcaf90db3f821f8e70becb702444d2f912df7680e62d3d885666`.
+The genesis hashes are pinned in `config.py` and by tests:
+devnet `b163bf62f484bcaf90db3f821f8e70becb702444d2f912df7680e62d3d885666`,
+testnet `2ddd2b532e7d313ab4fed3c7ddbba84297d9f35fd040292e2046da471d29d335`,
+privnet `4b79822b6a7ebf9af6848c194b6543ef3934bc23a742a1a7e710f7c6e9c47130`.
+Every consensus parameter of each profile is additionally pinned by `consensus_fingerprint()` (see `docs/TESTNET_GENESIS.md`);
+changing a consensus rule of a released network requires a new network id.
 
 ### 5.7 Timestamps
 

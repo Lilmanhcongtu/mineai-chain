@@ -6,7 +6,7 @@ MineAI keeps three completely separate network profiles. Selecting one is done w
 | Profile | Purpose | State |
 |---|---|---|
 | `devnet` | Local development on one or more machines/processes | Working: multi-node P2P with fork choice and reorganizations |
-| `testnet` | Future public test network | Profile defined; **genesis not created, no nodes exist** |
+| `testnet` | Public test network (release candidate) | Genesis pinned (`docs/TESTNET_GENESIS.md`); **not launched, no public nodes exist** |
 | `privnet` | Private multi-node testing (Milestone 7): 5 s blocks, low difficulty | Working; used by `scripts\private_testnet.py`. **Never for public use.** |
 | `mainnet` | — | **Disabled in code.** Not launched, not planned for launch without explicit authorization |
 
