@@ -1,0 +1,51 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.local.json
+secrets/
+
+# Wallets, keys, recovery material
+*.wallet.json
+*wallet*.json
+mywallet.json
+*.key
+*.pem
+*.mnemonic
+*.seed
+recovery*
+*recovery-phrase*
+*backup*.json
+
+# Databases and node data
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+.mineai/
+devnet-data/
+testnet-data/
+demo/
+
+# Python / build artifacts
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+logs/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
