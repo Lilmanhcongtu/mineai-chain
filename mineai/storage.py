@@ -75,7 +75,34 @@ def _migration_2(conn: sqlite3.Connection) -> None:
         """)
 
 
-MIGRATIONS = [_migration_1, _migration_2]      # index i migrates schema version i -> i+1
+def _migration_3(conn: sqlite3.Connection) -> None:
+    # Cumulative chain work per block, and storage for blocks that are not on the best chain
+    # (competing branches and branches abandoned by a reorganization).
+    conn.execute("ALTER TABLE blocks ADD COLUMN total_work TEXT NOT NULL DEFAULT '0'")
+    total = 0
+    for height, difficulty in conn.execute("SELECT height, difficulty FROM blocks ORDER BY height").fetchall():
+        if height > 0:
+            total += 16 ** difficulty                    # work(block) = 16^difficulty, work(genesis) = 0
+        conn.execute("UPDATE blocks SET total_work=? WHERE height=?", (str(total), height))
+    _run_statements(conn,
+        """
+        CREATE TABLE side_blocks (
+            hash TEXT PRIMARY KEY,
+            height INTEGER NOT NULL,
+            previous_hash TEXT NOT NULL,
+            total_work TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'ok',
+            received INTEGER NOT NULL,
+            block_json TEXT NOT NULL
+        );
+        CREATE INDEX idx_side_prev ON side_blocks(previous_hash);
+        CREATE INDEX idx_side_height ON side_blocks(height)
+        """)
+
+
+MIGRATIONS = [_migration_1, _migration_2, _migration_3]      # index i migrates schema version i -> i+1
+
+WIRE_KEYS = ("height", "previous_hash", "merkle_root", "timestamp", "difficulty", "nonce", "hash", "transactions")
 
 
 class Storage:
@@ -168,6 +195,7 @@ class Storage:
             "transactions": json.loads(row["body_json"]),
             # derived, for explorers (not part of the hashed header)
             "miner": row["miner"], "subsidy": row["subsidy"], "fees": row["fees"],
+            "total_work": row["total_work"],
         }
 
     def block_count(self) -> int:
@@ -227,23 +255,23 @@ class Storage:
         with self.atomic():
             self.conn.execute(
                 "INSERT INTO blocks(height,hash,previous_hash,merkle_root,timestamp,difficulty,nonce,"
-                "miner,subsidy,fees,body_json) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                "miner,subsidy,fees,body_json,total_work) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                 (0, block["hash"], block["previous_hash"], block["merkle_root"], block["timestamp"],
-                 block["difficulty"], block["nonce"], "GENESIS", 0, 0, "[]"))
+                 block["difficulty"], block["nonce"], "GENESIS", 0, 0, "[]", "0"))
             self.meta_set("minted_supply", "0")
 
     def apply_block(self, block: dict, miner: str, subsidy: int, fees: int,
                     changes: dict[str, tuple[int, int]], undo: dict[str, tuple[int, int] | None],
-                    minted_supply: int) -> None:
+                    minted_supply: int, total_work: int) -> None:
         """Atomically persist a validated block plus all resulting state changes.
         Must be called inside `atomic()` together with mempool pruning by the caller."""
         with self.atomic():
             self.conn.execute(
                 "INSERT INTO blocks(height,hash,previous_hash,merkle_root,timestamp,difficulty,nonce,"
-                "miner,subsidy,fees,body_json) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                "miner,subsidy,fees,body_json,total_work) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                 (block["height"], block["hash"], block["previous_hash"], block["merkle_root"],
                  block["timestamp"], block["difficulty"], block["nonce"], miner, subsidy, fees,
-                 json.dumps(block["transactions"], sort_keys=True, separators=(",", ":"))))
+                 json.dumps(block["transactions"], sort_keys=True, separators=(",", ":")), str(total_work)))
             for position, tx in enumerate(block["transactions"]):
                 self.conn.execute("INSERT INTO tx_index(txid,height,position) VALUES(?,?,?)",
                                   (tx["txid"], block["height"], position))
@@ -255,6 +283,87 @@ class Storage:
             self.conn.execute("INSERT INTO state_diffs(height,diff_json) VALUES(?,?)",
                               (block["height"], json.dumps(undo, sort_keys=True, separators=(",", ":"))))
             self.meta_set("minted_supply", str(minted_supply))
+
+    # -------------------------------------------------------------- best chain helpers
+    def tip_work(self) -> int:
+        with self.lock:
+            row = self.conn.execute("SELECT total_work FROM blocks ORDER BY height DESC LIMIT 1").fetchone()
+            return int(row[0]) if row else 0
+
+    def is_main(self, block_hash: str) -> bool:
+        with self.lock:
+            return self.conn.execute("SELECT 1 FROM blocks WHERE hash=?", (block_hash,)).fetchone() is not None
+
+    def blocks_after(self, height: int, count: int) -> list[dict]:
+        with self.lock:
+            rows = self.conn.execute("SELECT * FROM blocks WHERE height>? ORDER BY height LIMIT ?",
+                                     (height, count)).fetchall()
+            return [self._row_to_block(r) for r in rows]
+
+    def disconnect_tip(self) -> dict:
+        """Remove the best tip, restoring the pre-block state recorded when it was connected.
+        The block is kept as a side block. Must run inside the caller's atomic() together
+        with everything that follows (a reorganization is one transaction)."""
+        with self.atomic():
+            tip = self.latest_block()
+            if tip is None or tip["height"] == 0:
+                raise StorageError("cannot disconnect the genesis block")
+            row = self.conn.execute("SELECT diff_json FROM state_diffs WHERE height=?", (tip["height"],)).fetchone()
+            if row is None:
+                raise StorageError(f"no undo data for height {tip['height']}: database corrupted")
+            for address, (balance, nonce) in json.loads(row[0]).items():
+                self.conn.execute(
+                    "INSERT INTO accounts(address,balance,nonce) VALUES(?,?,?) "
+                    "ON CONFLICT(address) DO UPDATE SET balance=excluded.balance, nonce=excluded.nonce",
+                    (address, balance, nonce))
+            self.conn.execute("DELETE FROM tx_index WHERE height=?", (tip["height"],))
+            self.conn.execute("DELETE FROM state_diffs WHERE height=?", (tip["height"],))
+            self.conn.execute("DELETE FROM blocks WHERE height=?", (tip["height"],))
+            self.meta_set("minted_supply", str(int(self.meta_get("minted_supply") or 0) - tip["subsidy"]))
+            self.side_add(tip, int(tip["total_work"]), 0)
+            return tip
+
+    # -------------------------------------------------------------- side blocks
+    def side_add(self, block: dict, total_work: int, received: int) -> None:
+        wire = {k: block[k] for k in WIRE_KEYS}
+        with self.lock:
+            self.conn.execute(
+                "INSERT OR IGNORE INTO side_blocks(hash,height,previous_hash,total_work,status,received,block_json) "
+                "VALUES(?,?,?,?, 'ok', ?, ?)",
+                (block["hash"], block["height"], block["previous_hash"], str(total_work), received,
+                 json.dumps(wire, sort_keys=True, separators=(",", ":"))))
+
+    def side_get(self, block_hash: str) -> dict | None:
+        with self.lock:
+            row = self.conn.execute("SELECT * FROM side_blocks WHERE hash=?", (block_hash,)).fetchone()
+            if row is None:
+                return None
+            return {"block": json.loads(row["block_json"]), "height": row["height"],
+                    "previous_hash": row["previous_hash"], "total_work": int(row["total_work"]),
+                    "status": row["status"]}
+
+    def side_remove(self, block_hash: str) -> None:
+        with self.lock:
+            self.conn.execute("DELETE FROM side_blocks WHERE hash=?", (block_hash,))
+
+    def side_mark_invalid(self, hashes: list[str]) -> None:
+        with self.lock:
+            self.conn.executemany("UPDATE side_blocks SET status='invalid' WHERE hash=?", [(h,) for h in hashes])
+
+    def side_count(self) -> int:
+        with self.lock:
+            return int(self.conn.execute("SELECT COUNT(*) FROM side_blocks").fetchone()[0])
+
+    def side_prune(self, min_height: int, max_count: int) -> int:
+        """Drop side blocks below `min_height`, then the oldest beyond `max_count`."""
+        with self.lock:
+            n = self.conn.execute("DELETE FROM side_blocks WHERE height < ?", (min_height,)).rowcount
+            excess = self.side_count() - max_count
+            if excess > 0:
+                n += self.conn.execute(
+                    "DELETE FROM side_blocks WHERE hash IN (SELECT hash FROM side_blocks "
+                    "ORDER BY height ASC, received ASC LIMIT ?)", (excess,)).rowcount
+            return n
 
     # -------------------------------------------------------------- accounts / index
     def get_account(self, address: str) -> tuple[int, int]:

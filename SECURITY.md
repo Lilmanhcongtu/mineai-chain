@@ -25,13 +25,14 @@ like `password`, `private_key`, `secret`, `mnemonic` or `seed`.
 * Block validation of PoW, difficulty, merkle root, coinbase, subsidy, fees, supply cap, timestamps, sizes.
 * Coinbase maturity.
 * Atomic persistence (block + state + mempool in one SQLite transaction), forward-only migrations, integrity checks on open, refusal of foreign/legacy/newer databases.
+* Chain: cumulative-work fork choice, atomic reorganizations that roll back completely on any invalid block, permanent rejection of invalid branches (time-dependent failures excepted), reorg-depth and side-block/orphan bounds, no switching on equal work.
 * P2P: length checked before reading any body, strict allow-list message schemas, size/time/rate limits, connection limits, misbehavior scores that survive reconnects, temporary bans, unsolicited-response rejection, duplicate-request suppression, mandatory handshake with network/genesis/version checks, no administrative messages, loopback binding by default.
 * API: strict parsing, request-size and rate limits, uniform error responses without stack traces, loopback-only mining endpoints, no admin or wallet endpoints.
 * Wallet: scrypt (N=2^17) + AES-256-GCM, ciphertext bound to address and network, no overwrite of existing files, password never on the command line.
 
 ## Known limitations (be honest about these)
 
-1. **No fork choice** — the chain is linear; competing blocks at the same height are ignored, so two miners racing can split the network permanently until Milestone 4. P2P is new, lightly tested against real-world conditions (only localhost) and has had no external review.
+1. **Fork handling is new and only tested on localhost.** Cumulative-work selection, reorganizations (atomic, depth-limited to 100 blocks) and side-block storage have had no external review. The depth limit protects against deep-fork attacks but can split the network permanently if a partition outlasts it. Orphan blocks are held in memory (up to 100 blocks, so up to ~50 MB in the worst case) and side blocks on disk (up to 2000).
 2. **Fixed difficulty** (SHA-256, leading hex zeros); no dynamic adjustment and therefore no manipulation-resistance analysis yet. (Milestone 5.) The timestamp rules (median-time-past, +2 h cap) are in place as a prerequisite.
 3. **Wallet:** no lock/timeout, no backup/restore tooling beyond copying the file, no recovery phrase, no hardware-wallet support. Password strength is only length-checked (≥ 10 chars). Unlocked keys live in process memory while signing.
 4. **Address format and encodings are project-specific and unreviewed** by cryptographers.

@@ -310,11 +310,15 @@ def test_block_ahead_of_tip_triggers_sync(tmp_path):
             tip = a.chain.tip()
             await raw.send("block", {"block": {k: tip[k] for k in P_BLOCK_FIELDS}})       # height 5 while b is at 0
             get = await raw.recv_type("get_blocks")
-            assert get["from_height"] == 1
+            assert get["locator"] == b.chain.locator() and get["locator"][-1] == c_genesis(b)
             blocks = [{k: a.chain.storage.get_block_by_height(h)[k] for k in P_BLOCK_FIELDS} for h in range(1, 6)]
             await raw.send("blocks", {"blocks": blocks})
             await until(lambda: b.chain.tip()["height"] == 5)
     run(scenario())
+
+
+def c_genesis(node):
+    return node.chain.storage.get_block_by_height(0)["hash"]
 
 
 P_BLOCK_FIELDS = ("height", "previous_hash", "merkle_root", "timestamp", "difficulty", "nonce", "hash", "transactions")
@@ -333,8 +337,12 @@ MALFORMED = {
     "bool version": b'{"v":true,"type":"ping","data":{"nonce":1}}',
     "NaN constant": b'{"v":1,"type":"ping","data":{"nonce":NaN}}',
     "float nonce": b'{"v":1,"type":"ping","data":{"nonce":1.5}}',
-    "negative height": b'{"v":1,"type":"get_blocks","data":{"from_height":-1,"count":5}}',
-    "huge count": b'{"v":1,"type":"get_blocks","data":{"from_height":1,"count":100000}}',
+    "old from_height schema": b'{"v":1,"type":"get_blocks","data":{"from_height":1,"count":5}}',
+    "empty locator": b'{"v":1,"type":"get_blocks","data":{"locator":[],"count":5}}',
+    "locator too long": json.dumps({"v": 1, "type": "get_blocks", "data": {"locator": ["a" * 64] * 33, "count": 5}}).encode(),
+    "bad locator hash": b'{"v":1,"type":"get_blocks","data":{"locator":["xyz"],"count":5}}',
+    "huge count": json.dumps({"v": 1, "type": "get_blocks", "data": {"locator": ["a" * 64], "count": 100000}}).encode(),
+    "zero count": json.dumps({"v": 1, "type": "get_blocks", "data": {"locator": ["a" * 64], "count": 0}}).encode(),
     "bad hash in inv": b'{"v":1,"type":"inv","data":{"kind":"tx","hashes":["zz"]}}',
     "inv too long": json.dumps({"v": 1, "type": "inv", "data": {"kind": "tx", "hashes": ["a" * 64] * 501}}).encode(),
     "bad kind": b'{"v":1,"type":"inv","data":{"kind":"admin","hashes":["' + b"a" * 64 + b'"]}}',
@@ -449,7 +457,7 @@ def test_malicious_sync_server_is_banned_and_state_stays_clean(tmp_path):
                 c.mine(src, alice, announce=False)
             ident = os.urandom(16).hex()
             raw = Raw(a, ident)
-            await raw.connect(height=3)                                 # claims to be at height 3
+            await raw.connect(height=3, total_work=str(3 * 16))          # claims 3 blocks of work (> our 1)
             get = await raw.recv_type("get_blocks")
             good = [{k: src.chain.storage.get_block_by_height(h)[k] for k in P_BLOCK_FIELDS} for h in (1, 2, 3)]
             good[1]["nonce"] += 1                                       # corrupt the second block
@@ -515,26 +523,4 @@ def test_known_transactions_are_not_reprocessed_or_rebroadcast(tmp_path):
             assert "inv" not in await watcher.drain(0.5)                # NOT announced a second time
             assert a.chain.storage.mempool_count() == 1
             assert next(p for p in a.peers.values() if p.node_id == sender.node_id).score == 0   # and not punished
-    run(scenario())
-
-
-# ====================================================================== documented limitation (M4)
-def test_competing_blocks_are_ignored_until_fork_choice_exists(tmp_path):
-    """Milestone 3 has a linear chain: two nodes that mined different block 1s stay on their own.
-    They must not crash, corrupt state, or ban each other. Fork choice arrives in Milestone 4."""
-    async def scenario():
-        async with Cluster(tmp_path) as c:
-            a = await c.start("a")
-            b = await c.start("b")
-            c.mine(a, Acct(), announce=False)
-            c.mine(b, Acct(), announce=False)
-            assert a.chain.tip()["hash"] != b.chain.tip()["hash"]
-            dial = asyncio.create_task(b._connect(addr(a)))            # _connect lives as long as the connection
-            await until(lambda: len(a.peers) == 1 and len(b.peers) == 1)
-            await asyncio.sleep(0.6)
-            assert a.chain.tip()["height"] == b.chain.tip()["height"] == 1
-            assert a.chain.tip()["hash"] != b.chain.tip()["hash"]      # NOT converged: known limitation
-            a.chain.verify_integrity()
-            b.chain.verify_integrity()
-            assert all(p.score == 0 for p in list(a.peers.values()) + list(b.peers.values()))
     run(scenario())

@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 
 from .. import __version__
 from ..blockchain import Blockchain
-from ..consensus import BLOCK_FIELDS, ValidationError
+from ..consensus import ValidationError
 from ..log import event
 from . import protocol as P
 
@@ -85,6 +85,7 @@ class Peer:
         self.listen_port = 0
         self.height = 0
         self.tip_hash = ""
+        self.total_work = 0
         self.version: int | None = None
         self.score = 0
         self.tokens = node.cfg.rate_burst
@@ -148,7 +149,8 @@ class Peer:
 
     def info(self) -> dict:
         return {"node_id": self.node_id, "addr": f"{self.ip}:{self.port}", "advertised": self.advertised,
-                "inbound": self.inbound, "height": self.height, "version": self.version, "score": self.score}
+                "inbound": self.inbound, "height": self.height, "total_work": str(self.total_work),
+                "version": self.version, "score": self.score}
 
 
 class ProtocolStateError(Exception):
@@ -307,7 +309,8 @@ class P2PNode:
         tip = self.chain.tip()
         return {"min_version": self.cfg.version_range[0], "max_version": self.cfg.version_range[1],
                 "network_id": self.chain.params.network_id, "genesis_hash": self.chain.storage.get_block_by_height(0)["hash"],
-                "height": tip["height"], "tip_hash": tip["hash"], "listen_port": self.port,
+                "height": tip["height"], "tip_hash": tip["hash"], "total_work": str(self.chain.tip_work()),
+                "listen_port": self.port,
                 "node_id": self.node_id, "user_agent": self.cfg.user_agent}
 
     async def _handshake(self, peer: Peer) -> None:
@@ -336,7 +339,7 @@ class P2PNode:
         if len(self.peers) >= cfg.max_peers:
             raise P.ProtocolError("peer table full", penalty=0)
         peer.node_id, peer.version = d["node_id"], version
-        peer.height, peer.tip_hash = d["height"], d["tip_hash"]
+        peer.height, peer.tip_hash, peer.total_work = d["height"], d["tip_hash"], int(d["total_work"])
         if d["listen_port"]:
             peer.listen_port = d["listen_port"]
 
@@ -353,7 +356,7 @@ class P2PNode:
                   height=peer.height, version=peer.version)
             peer.tasks.append(asyncio.create_task(self._ping_loop(peer)))
             await peer.send("get_peers", {})
-            if peer.height > self.chain.tip()["height"]:
+            if peer.total_work > self.chain.tip_work():
                 peer.tasks.append(asyncio.create_task(self._sync_from(peer)))
             await self._read_loop(peer)
         except P.ProtocolError as exc:
@@ -442,7 +445,7 @@ class P2PNode:
                     continue
             else:
                 peer.known_block.add(h)
-                if h in self.seen_block or self.chain.storage.get_block_by_hash(h):
+                if h in self.seen_block or self.chain.has_block(h):
                     continue
             if (d["kind"], h) in self.inflight:             # already asked someone for it
                 continue
@@ -459,9 +462,9 @@ class P2PNode:
                 if tx:
                     await peer.send("tx", {"tx": tx})
             else:
-                block = self.chain.storage.get_block_by_hash(h)
+                block = self.chain.get_block_any(h)
                 if block:
-                    await peer.send("block", {"block": _wire_block(block)})
+                    await peer.send("block", {"block": block})
 
     async def _on_tx(self, peer: Peer, tx: dict) -> None:
         txid = tx.get("txid") if isinstance(tx.get("txid"), str) else None
@@ -485,35 +488,38 @@ class P2PNode:
         if bh:
             self.inflight.pop(("block", bh), None)
             peer.known_block.add(bh)
-            if bh in self.seen_block or self.chain.storage.get_block_by_hash(bh):
+            if bh in self.seen_block or self.chain.has_block(bh):
                 return
+        before = self.chain.tip()["hash"]
         try:
-            accepted = self.chain.submit_mined_block(block)
+            result = self.chain.process_block(block)
         except ValidationError as exc:
-            if exc.code == "stale":
-                if isinstance(block.get("height"), int) and block["height"] > self.chain.tip()["height"] + 1:
-                    peer.height = max(peer.height, block["height"])
-                    if not peer.syncing:
-                        peer.tasks.append(asyncio.create_task(self._sync_from(peer)))
-                return                                       # old or competing block: fork choice is Milestone 4
+            if exc.code == "reorg_too_deep":                 # a chain we refuse to follow: not misbehavior
+                return
             await self.penalize(peer, 5 if exc.code == "bad_timestamp" else 50, f"block rejected: {exc.code}")
             return
-        self.seen_block.add(accepted["hash"])
-        peer.height = max(peer.height, accepted["height"])
-        await self._broadcast("block", accepted["hash"], exclude=peer)
+        if bh:
+            self.seen_block.add(bh)
+        if isinstance(block.get("height"), int):
+            peer.height = max(peer.height, block["height"])
+        if result.status == "orphan" and not peer.syncing:   # we lack its ancestry: ask for it
+            peer.tasks.append(asyncio.create_task(self._sync_from(peer)))
+        await self._announce_if_tip_changed(before, exclude=peer)
 
     async def _on_get_blocks(self, peer: Peer, d: dict) -> None:
         out, size = [], 0
-        for h in range(d["from_height"], d["from_height"] + d["count"]):
-            block = self.chain.storage.get_block_by_height(h)
-            if block is None:
-                break
-            wire = _wire_block(block)
+        for wire in self.chain.blocks_after_locator(d["locator"], d["count"]):
             size += len(str(wire))
             if size > self.cfg.max_message_bytes // 2 and out:
                 break
             out.append(wire)
         await peer.send("blocks", {"blocks": out})
+
+    async def _announce_if_tip_changed(self, before: str, exclude: Peer | None = None) -> None:
+        tip = self.chain.tip()["hash"]
+        if tip != before:                                    # extension or reorganization
+            self.seen_block.add(tip)
+            await self._broadcast("block", tip, exclude=exclude)
 
     # ------------------------------------------------------------------ sync
     async def _sync_from(self, peer: Peer) -> None:
@@ -522,25 +528,28 @@ class P2PNode:
         peer.syncing = True
         try:
             while not peer.closed and not self.stopped:
-                start = self.chain.tip()["height"] + 1
                 try:
-                    blocks = await peer.request("get_blocks", {"from_height": start, "count": P.MAX_BLOCKS_PER_MESSAGE}, "blocks")
+                    blocks = await peer.request(
+                        "get_blocks", {"locator": self.chain.locator(), "count": P.MAX_BLOCKS_PER_MESSAGE}, "blocks")
                 except asyncio.TimeoutError:
                     return
                 if not blocks:
                     return
-                progressed = False
+                before, progressed = self.chain.tip()["hash"], False
                 for block in blocks:
                     try:
-                        accepted = self.chain.submit_mined_block(block)
+                        result = self.chain.process_block(block)
                     except ValidationError as exc:
-                        if exc.code == "stale":
-                            continue                         # we already have it / it does not extend us
-                        await self.penalize(peer, 100, f"sync block rejected: {exc.code}")
+                        if exc.code == "reorg_too_deep":
+                            return                           # this peer is on a chain we will not follow
+                        await self.penalize(peer, 5 if exc.code == "bad_timestamp" else 100,
+                                            f"sync block rejected: {exc.code}")
                         return
-                    progressed = True
-                    self.seen_block.add(accepted["hash"])
-                    await self._broadcast("block", accepted["hash"], exclude=peer)
+                    if result.status != "duplicate":
+                        progressed = True
+                    if isinstance(block.get("hash"), str):
+                        self.seen_block.add(block["hash"])
+                await self._announce_if_tip_changed(before, exclude=peer)
                 if not progressed or len(blocks) < P.MAX_BLOCKS_PER_MESSAGE:
                     return
         finally:
@@ -574,10 +583,6 @@ class P2PNode:
     def seen_tx_add_threadsafe(self, txid: str | None) -> None:
         if txid and self.loop:
             self.loop.call_soon_threadsafe(self.seen_tx.add, txid)
-
-
-def _wire_block(block: dict) -> dict:
-    return {k: block[k] for k in BLOCK_FIELDS}
 
 
 def _is_loopback(ip: str) -> bool:

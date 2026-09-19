@@ -16,6 +16,7 @@ SUPPORTED_MIN, SUPPORTED_MAX = 1, 1  # protocol versions this software speaks
 MAX_INV = 500
 MAX_PEERS_PER_MESSAGE = 50
 MAX_BLOCKS_PER_MESSAGE = 64
+MAX_LOCATOR = 32
 MAX_GET_DATA_ITEMS = 16              # items served per get_data (bounds outbound bandwidth)
 
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -63,7 +64,7 @@ def _hash_list(v, name, limit) -> list:
 # ------------------------------------------------------------------ per-message schemas
 def _hello(d):
     _keys(d, {"min_version", "max_version", "network_id", "genesis_hash", "height", "tip_hash",
-              "listen_port", "node_id", "user_agent"}, "hello")
+              "total_work", "listen_port", "node_id", "user_agent"}, "hello")
     lo, hi = _int(d["min_version"], "min_version", 1, 1000), _int(d["max_version"], "max_version", 1, 1000)
     if lo > hi:
         raise ProtocolError("bad version range")
@@ -72,6 +73,10 @@ def _hello(d):
     _hash(d["genesis_hash"], "genesis_hash")
     _int(d["height"], "height")
     _hash(d["tip_hash"], "tip_hash")
+    tw = d["total_work"]
+    if not isinstance(tw, str) or not tw.isascii() or not tw.isdigit() or not 1 <= len(tw) <= 100 \
+            or (len(tw) > 1 and tw[0] == "0"):
+        raise ProtocolError("bad total_work")
     _int(d["listen_port"], "listen_port", 0, 65535)
     if not isinstance(d["node_id"], str) or not NODE_ID_RE.match(d["node_id"]):
         raise ProtocolError("bad node_id")
@@ -124,8 +129,8 @@ def _block(d):
 
 
 def _get_blocks(d):
-    _keys(d, {"from_height", "count"}, "get_blocks")
-    _int(d["from_height"], "from_height", 1, 2 ** 31)
+    _keys(d, {"locator", "count"}, "get_blocks")
+    _hash_list(d["locator"], "locator", MAX_LOCATOR)
     _int(d["count"], "count", 1, MAX_BLOCKS_PER_MESSAGE)
     return d
 

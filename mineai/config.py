@@ -44,6 +44,10 @@ class NetworkParams:
     mempool_max_txs: int = 5000
     mempool_max_per_sender: int = 25
     mempool_timestamp_window: int = 24 * 60 * 60
+    # Fork handling policy (NOT consensus; see PROTOCOL.md 8.5):
+    max_reorg_depth: int = 100
+    max_side_blocks: int = 2000
+    max_orphans: int = 100
     enabled: bool = True
 
     def __post_init__(self):

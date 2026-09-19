@@ -208,30 +208,27 @@ def test_reorg_ready_undo_data_restores_previous_state(tmp_path):
     assert tuple(undo[bob.address]) == (0, 0)
 
 
-def test_upgrade_from_schema_v1_preserves_all_data_and_adds_peers(tmp_path):
-    """Simulate a Milestone-2 database (schema v1) and open it with the current software."""
-    import mineai.storage as storage_mod
+def test_upgrade_from_older_schema_preserves_data_and_backfills_work(tmp_path):
+    """Strip a real chain back to the schema-v1 layout, then open it with the current software:
+    the real migrations (peers table, total_work backfill, side_blocks) must run over existing data."""
+    chain, alice = funded(tmp_path, blocks=4)
+    chain.submit_transaction(alice.tx(Acct(), 2))
+    chain.close()
     path = tmp_path / "chain.db"
     con = sqlite3.connect(path, isolation_level=None)
-    con.execute("BEGIN")
-    storage_mod._migration_1(con)
-    con.execute("PRAGMA user_version=1")
-    con.execute("COMMIT")
-    con.close()
-    chain = Blockchain(path, TEST, clock=Clock())          # initializes genesis on the v1 schema...
-    assert chain.storage.conn.execute("PRAGMA user_version").fetchone()[0] == len(MIGRATIONS)
-    assert chain.storage.peers_count() == 0                # ...and the v2 table exists
-    alice = Acct()
-    mine(chain, alice)
-    chain.close()
-    con = sqlite3.connect(path, isolation_level=None)      # now downgrade the marker to v1 and drop the table
+    con.execute("DROP TABLE side_blocks")
     con.execute("DROP TABLE peers")
+    con.execute("ALTER TABLE blocks DROP COLUMN total_work")
     con.execute("PRAGMA user_version=1")
     con.close()
-    reopened = Blockchain(path, TEST, clock=Clock())       # real upgrade with existing chain data
-    assert reopened.tip()["height"] == 1 and reopened.account(alice.address)["balance"] == mai(25)
-    assert reopened.storage.peers_count() == 0
-    reopened.verify_integrity()
+    reopened = Blockchain(path, TEST, clock=Clock())
+    assert reopened.storage.conn.execute("PRAGMA user_version").fetchone()[0] == len(MIGRATIONS)
+    assert reopened.tip()["height"] == 4 and reopened.storage.mempool_count() == 1
+    assert reopened.tip()["total_work"] == str(4 * 16)                 # backfilled: 4 blocks of difficulty 1
+    assert reopened.storage.peers_count() == 0 and reopened.storage.side_count() == 0
+    reopened.verify_integrity()                                        # checks cumulative work block by block
+    mine(reopened, alice)                                              # and the chain keeps working
+    assert reopened.tip()["height"] == 5
 
 
 def test_peer_address_storage(tmp_path):

@@ -5,7 +5,7 @@ MineAI keeps three completely separate network profiles. Selecting one is done w
 
 | Profile | Purpose | State |
 |---|---|---|
-| `devnet` | Local development on one or more machines/processes | Working: multi-node P2P (linear chain, see limitations) |
+| `devnet` | Local development on one or more machines/processes | Working: multi-node P2P with fork choice and reorganizations |
 | `testnet` | Future public test network | Profile defined; **genesis not created, no nodes exist** |
 | `mainnet` | — | **Disabled in code.** Not launched, not planned for launch without explicit authorization |
 
@@ -16,13 +16,14 @@ Separation guarantees (all covered by tests):
 * different default API and P2P ports and data directories (`<data dir>/<network>/chain.db`);
 * a database opened with the wrong network is refused; wallets record their network and are refused elsewhere.
 
-## Current capabilities (Milestone 3)
+## Current capabilities (Milestone 4)
 
-* Multi-node peer-to-peer networking over TCP (`PROTOCOL.md` section 10): handshake with network/genesis/version checks, peer discovery and persistence, transaction and block relay with duplicate suppression, initial and incremental synchronization, recovery after disconnects, connection limits, per-peer rate limits, misbehavior scoring and temporary bans.
-* Verified with three independent node processes (`scripts\demo_three_nodes.ps1`): shared genesis, a transaction relayed between nodes, blocks mined on different nodes, identical chain tip everywhere.
-* **Known limitation: no fork choice yet.** Chains are linear. If two nodes mine different blocks at the same height they will *not* converge; the later block is ignored. Run one miner at a time until Milestone 4 (cumulative-work selection and reorganizations).
-* Difficulty is still fixed (Milestone 5). Nothing is hosted publicly: there are no seed nodes and no public testnet.
-* Planned next: fork choice and reorgs (4), dynamic difficulty (5), wallet/miner/explorer (6), private then public testnet (7–8).
+* Multi-node peer-to-peer networking over TCP (`PROTOCOL.md` section 10): handshake with network/genesis/version checks, peer discovery and persistence, transaction and block relay with duplicate suppression, locator-based synchronization, recovery after disconnects, connection limits, per-peer rate limits, misbehavior scoring and temporary bans.
+* **Fork choice by cumulative work** (section 8): the best chain is the valid chain with the most total work, not the most blocks. Competing blocks are kept as side chains; orphans are held (bounded) until their parent arrives; a heavier branch triggers an atomic reorganization with state rollback, mempool restoration and permanent rejection of invalid branches. Equal work never causes switching (first seen stays).
+* Verified with three independent node processes (`scripts\demo_three_nodes.ps1`): shared genesis, transaction and block relay between nodes, a network partition, and a real reorganization in which a node abandons a private fork and converges on the heaviest chain.
+* **Reorganization depth limit:** nodes refuse reorganizations deeper than 100 blocks (policy, section 8.5). A partition that outlasts this would split the network permanently and require a manual resync.
+* Difficulty is still fixed (Milestone 5), so "more work" currently equals "more blocks" on real chains; the cumulative-work rule itself is tested with mixed difficulties. Nothing is hosted publicly: there are no seed nodes and no public testnet.
+* Planned next: dynamic difficulty (5), wallet/miner/explorer (6), private then public testnet (7-8).
 
 ## Running a node
 

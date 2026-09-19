@@ -163,6 +163,8 @@ def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES
             "network": params.name, "network_id": params.network_id, "label": params.label,
             "genesis_hash": params.genesis_hash or chain.storage.get_block_by_height(0)["hash"],
             "height": tip["height"], "latest_hash": tip["hash"], "difficulty": params.difficulty,
+            "total_work": str(chain.tip_work()), "reorgs_since_start": chain.reorg_count,
+            "side_blocks": chain.storage.side_count(),
             "block_reward_atomic": params.block_reward, "block_reward_mai": atomic_to_mai(params.block_reward),
             "minted_supply_atomic": supply, "minted_supply_mai": atomic_to_mai(supply),
             "max_supply_atomic": params.max_supply, "max_supply_mai": atomic_to_mai(params.max_supply),

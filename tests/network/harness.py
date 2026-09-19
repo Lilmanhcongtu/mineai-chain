@@ -164,3 +164,16 @@ class Raw:
 
 def frame(payload: bytes) -> bytes:
     return struct.pack(">I", len(payload)) + payload
+
+
+async def isolate(cluster: "Cluster", node: P2PNode) -> None:
+    """Take a node off the network (all P2P activity stops) but keep its chain and database open."""
+    await node.stop()
+
+
+async def rejoin(cluster: "Cluster", name: str, old: P2PNode, seeds) -> P2PNode:
+    """Bring an isolated node's chain back online with a fresh P2P layer."""
+    node = P2PNode(old.chain, P2PConfig(seeds=list(seeds), **{**FAST}))
+    await node.start()
+    cluster.nodes[name] = node
+    return node

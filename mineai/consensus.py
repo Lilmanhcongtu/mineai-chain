@@ -159,7 +159,7 @@ def genesis_block(params: NetworkParams) -> dict:
 
 
 # ------------------------------------------------------------------ blocks
-def check_block_structure(block: object, params: NetworkParams) -> dict:
+def check_block_structure(block: object, params: NetworkParams, expected_difficulty: int | None = None) -> dict:
     """Stateless block checks: fields, types, sizes, transaction well-formedness, merkle root,
     hash and proof of work. State-dependent rules live in Blockchain."""
     if not isinstance(block, dict) or set(block) != BLOCK_FIELDS:
@@ -188,7 +188,7 @@ def check_block_structure(block: object, params: NetworkParams) -> dict:
     _hash(txs[0]["txid"], "coinbase txid")
     if merkle_root([txs[0]["txid"]] + ids) != block["merkle_root"]:
         raise ValidationError("merkle root mismatch", "bad_merkle")
-    if difficulty != params.difficulty:
+    if difficulty != (params.difficulty if expected_difficulty is None else expected_difficulty):
         raise ValidationError("incorrect difficulty for this height", "bad_difficulty")
     if block_hash(params, block) != block["hash"]:
         raise ValidationError("incorrect block hash", "bad_hash")

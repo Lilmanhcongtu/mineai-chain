@@ -3,10 +3,10 @@
 Prototype blockchain software for **development networks only** — MineAI (`MAI`), account-based ledger,
 CPU SHA-256 proof of work, Ed25519 wallets, REST API and a local explorer.
 
-> **Not production software.** No independent audit, no fork choice yet (run one miner at a time), no dynamic difficulty yet.
+> **Not production software.** No independent audit, no dynamic difficulty yet, only tested on localhost.
 > Coins on devnet/testnet have **no monetary value**. There is no mainnet, no presale and nothing to buy.
 
-Status: Milestone 3 (three-node local devnet) — see `PROTOCOL.md` for the exact rules, `TOKENOMICS.md`,
+Status: Milestone 4 (fork choice and reorganizations) — see `PROTOCOL.md` for the exact rules, `TOKENOMICS.md`,
 `NETWORK.md`, `SECURITY.md` (including known limitations) and `CONTRIBUTING.md`.
 
 ## What changed from V0.1
@@ -19,6 +19,7 @@ Status: Milestone 3 (three-node local devnet) — see `PROTOCOL.md` for the exac
 * **V0.1 databases and wallets are intentionally incompatible** (different network, addresses and formats). Nothing carries over; V0.1 files are never modified.
 
 * **Milestone 3:** multi-node P2P (handshake, discovery, tx/block relay, sync, bans) - see `PROTOCOL.md` section 10.
+* **Milestone 4:** cumulative-work chain selection, side chains, orphans, atomic reorganizations, mempool restoration - see `PROTOCOL.md` section 8.
 
 ## Quick start (Windows PowerShell, Python 3.10+)
 
@@ -26,7 +27,7 @@ Status: Milestone 3 (three-node local devnet) — see `PROTOCOL.md` for the exac
 Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\setup_windows.ps1        # venv + install; stops on any failure
 .\scripts\demo_windows.ps1         # isolated end-to-end demo (node, 2 wallets, mining, transfer)
-.\scripts\demo_three_nodes.ps1     # three node processes: relay + sync, verifies all reach the same tip
+.\scripts\demo_three_nodes.ps1     # three node processes: relay, sync, a partition and a real reorganization
 ```
 
 Run your own devnet node:
@@ -82,5 +83,5 @@ Suites: `tests/unit` (encodings, golden vectors, addresses, amounts), `tests/con
 
 ## Roadmap
 
-3 (done): three-node P2P devnet → 4: fork choice and reorgs → 5: dynamic difficulty (~60 s) → 6: wallet, miner, explorer → 7: private testnet →
+3 (done): three-node P2P devnet → 4 (done): fork choice and reorgs → 5: dynamic difficulty (~60 s) → 6: wallet, miner, explorer → 7: private testnet →
 8: public testnet candidate. Mainnet is **not** planned for launch without explicit authorization and an independent audit.

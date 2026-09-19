@@ -1,4 +1,4 @@
-# MineAI Protocol Specification — v1 (draft, Milestone 3)
+# MineAI Protocol Specification — v1 (draft, Milestone 4)
 
 > **Status:** covers the rules **implemented and tested today** (consensus rules plus the Milestone 3 peer-to-peer protocol). Sections marked
 > **[NOT YET SPECIFIED]** are planned for later milestones and are deliberately empty: nothing in the
@@ -129,7 +129,7 @@ hash   = hex( SHA-256( header ) )
 
 `difficulty` is the number of leading **hexadecimal zeros** the block hash must have. It is fixed by the
 network profile (devnet: 4) — **dynamic difficulty is Milestone 5**. A block whose `difficulty` differs from the network value is invalid.
-Chain work (used from Milestone 4) is defined as `16^difficulty` per block.
+Chain work is defined in section 8.1.
 
 ### 5.6 Genesis
 
@@ -168,11 +168,54 @@ height `h`, `immature(addr, h)` = sum of coinbase amounts to `addr` in blocks wi
 * Fees are transfers from senders to the miner and **never increase supply**. Invariant, checked on every open: `sum(balances) == minted_supply`.
 * Minimum fee 0.001 MAI; default wallet fee 0.01 MAI. There is no halving schedule in this version; see `TOKENOMICS.md`.
 
-## 8. Chain selection and reorganizations — **[NOT YET SPECIFIED]**
+## 8. Chain selection and reorganizations (Milestone 4)
 
-Milestone 4 will specify cumulative-work chain selection. Until then a node has one linear chain and
-rejects any block that does not extend its tip (`stale`). The storage schema already records per-block
-undo data (`state_diffs`) in preparation.
+### 8.1 Chain work
+
+`work(block) = 16^difficulty` for blocks at height ≥ 1, and `work(genesis) = 0`.
+`total_work(block) = total_work(parent) + work(block)`. Work values are unbounded integers
+(stored as decimal strings; compared as integers).
+
+### 8.2 Best chain
+
+A node considers every block it has received whose ancestry it knows. The **best chain** is the valid chain
+with the greatest `total_work` — *not* the greatest height, so a shorter chain with more work wins.
+**Ties:** the chain whose tip was received first stays best (no switching on equal work).
+The difficulty a block must declare is a function of its ancestry, `expected_difficulty(parent)`
+(currently constant per network; Milestone 5 makes it dynamic). It is evaluated against the block's own parent chain, never the local tip.
+
+### 8.3 Block classes on receipt
+
+After stateless validation (§5.9 structure, sizes, merkle root, proof of work, declared difficulty):
+
+| class | condition | action |
+|---|---|---|
+| duplicate | hash already stored | ignore |
+| invalid | the parent (or the block itself) is known-invalid | reject, never retried |
+| orphan | parent unknown | keep in a bounded in-memory pool (100 blocks); request the missing ancestry; connect when the parent arrives |
+| extends the tip | parent is the current best tip | validate against state (§5.9) and connect |
+| side | parent known but not the tip | store; state is **not** evaluated yet |
+
+A stored side block whose `total_work` exceeds the tip's triggers a reorganization to it.
+Stateful rules (§4.3, §5.7 timestamps against *that branch's* recent blocks, §5.2 coinbase, §6 maturity) are checked when a block is connected, in the context of its own branch.
+
+### 8.4 Reorganization
+
+To switch from tip `T` to a better tip `N`, with fork point `F` (the newest common ancestor):
+1. Disconnect blocks from `T` back to `F`, restoring each block's recorded pre-state (balances, nonces, minted supply, transaction index).
+2. Connect the blocks from `F` to `N` in order, validating each fully.
+3. Do 1 and 2 **in one atomic database transaction**. If any block fails validation, everything is rolled back (the old chain is untouched), that block and its descendants are marked invalid permanently, and the reorganization is rejected. A block whose only problem is a timestamp too far in the future is *not* marked invalid (it may become valid later).
+4. Mempool: transactions from disconnected blocks that are not in the new branch are re-admitted in their original order when still valid (nonce, funds; the ±24 h timestamp window is not applied); transactions confirmed by the new branch are removed; everything unusable is then pruned. Coinbase outputs of disconnected blocks disappear with their blocks.
+5. Disconnected blocks remain stored as side blocks, so the abandoned branch can win again if it later gains more work.
+
+### 8.5 Depth limit (policy, not consensus)
+
+A node refuses to reorganize more than `max_reorg_depth` blocks (devnet/testnet: 100) and refuses to store new side blocks whose fork point is deeper than that.
+This bounds the cost of deep-fork attacks but **can split the network permanently** if a partition outlasts the limit; an operator would have to resync from scratch. Side blocks deeper than the limit, and beyond 2000 stored side blocks, are pruned.
+
+### 8.6 Locator-based synchronization
+
+`get_blocks` carries a *locator*: up to 32 hashes of the requester's best chain, newest first — the last 10 blocks one by one, then with exponentially growing gaps, always ending with genesis. The responder finds the first locator hash that is on *its* best chain and returns up to `count` blocks after it (from height 1 if none match). This finds the fork point across divergent chains in one round trip.
 
 ## 9. Mempool policy (not consensus)
 
@@ -182,7 +225,7 @@ A node accepts a transaction only if it is valid (§4), not a duplicate (confirm
 Limits: 5 000 transactions total, 25 per sender. No replace-by-fee. After each block the mempool is
 re-validated and unusable transactions are dropped. Templates order by fee, keeping per-sender nonce order.
 
-## 10. Peer-to-peer protocol (Milestone 3, protocol version 1)
+## 10. Peer-to-peer protocol (protocol version 1, extended in Milestone 4)
 
 Nodes talk over TCP. Consensus is never decided by the network layer: every block and transaction
 received is validated by the rules above before it is stored or relayed.
@@ -203,7 +246,7 @@ body  = UTF-8 JSON  {"v": <int>, "type": <string>, "data": <object>}     # exact
 
 Each side sends `hello` immediately after connecting (envelope `v` = 1) and must receive the peer's `hello`
 first (within 10 s). `hello.data` has exactly: `min_version`, `max_version` (1..1000), `network_id`, `genesis_hash`,
-`height`, `tip_hash`, `listen_port` (0..65535, 0 = not listening), `node_id` (32 hex characters, random per process),
+`height`, `tip_hash`, `total_work` (decimal string, ≤ 100 digits), `listen_port` (0..65535, 0 = not listening), `node_id` (32 hex characters, random per process),
 `user_agent` (≤64 characters of `[A-Za-z0-9._/- ]`).
 
 The connection is refused if: `network_id` or `genesis_hash` differ; there is no common protocol version
@@ -220,25 +263,26 @@ This software speaks version 1 only. A second `hello` after the handshake is a v
 | `inv` | `{kind:"tx"\|"block", hashes:[1..500 hex]}` | announce that we have items |
 | `get_data` | same shape | request announced items (at most 16 are served per request) |
 | `tx` / `block` | `{tx}` / `{block}` | the item itself (may also be pushed unsolicited) |
-| `get_blocks` | `{from_height:1..2^31, count:1..64}` | request consecutive blocks from a height |
+| `get_blocks` | `{locator:[1..32 hashes], count:1..64}` | request blocks after the newest locator hash on the responder's best chain (§8.6) |
 | `blocks` | `{blocks:[≤64 blocks]}` | reply to `get_blocks`; **only accepted if we asked** |
 
 ### 10.4 Relay and synchronization
 
 * A newly accepted transaction or block is announced with `inv` to every peer not already known to have it (never back to its source). An `inv` for an item we already have, or have already requested from someone (for up to the request timeout), causes no request. A `tx`/`block` already seen is dropped without reprocessing or rebroadcast.
-* When a peer's `hello` height, or a received block, shows it is ahead, we request `get_blocks` starting at our tip + 1, apply blocks in order through normal block validation, and repeat until a batch is short or makes no progress. Only one synchronization per peer runs at a time.
-* **Linear chain only:** a block that does not extend our tip is ignored (no penalty if it is merely old or competing). Competing forks are **not** resolved in this version; nodes that mine different blocks at the same height stay apart. Cumulative-work chain selection and reorganization are Milestone 4.
+* When a peer's `hello` shows more total work than ours, or a received block is an orphan, we synchronize: send `get_blocks` with our locator, process each returned block with the block classes of §8.3 (reorganizations happen automatically as work accumulates), and repeat until a batch is short or nothing new was learned. Only one synchronization per peer runs at a time.
+* Whenever our best tip changes (extension or reorganization) we announce the new tip with `inv` to peers that do not know it. Side blocks are not announced.
+* A block whose fork would exceed the depth limit (§8.5) is dropped without penalty; peers on a chain we refuse to follow are simply not synchronized with.
 
 ### 10.5 Peer management and abuse handling (policy, not consensus)
 
 * Limits: 16 peers total, 12 inbound, 4 outbound targets; 5 s connect timeout; 20 s write timeout; 20 s request timeout.
 * Rate limit per peer: 50 messages/second with a burst of 100; excess messages are dropped and scored.
-* Misbehavior score per peer identity (accumulated across reconnects): malformed frame/JSON 50; unknown message type 20; invalid transaction 20 (1 for races such as duplicate/nonce/insufficient funds); invalid block 50 (5 for a timestamp problem); invalid block during synchronization 100; unsolicited `blocks` 20 (non-fatal); rate-limit excess 10 each; protocol-level violations that are fatal close the connection.
+* Misbehavior score per peer identity (accumulated across reconnects): malformed frame/JSON 50; unknown message type 20; invalid transaction 20 (1 for races such as duplicate/nonce/insufficient funds); invalid block 50 (5 for a timestamp problem; 0 for a fork that is merely too deep); invalid block during synchronization 100; unsolicited `blocks` 20 (non-fatal); rate-limit excess 10 each; protocol-level violations that are fatal close the connection.
 * A score of 100 bans the identity for 10 minutes (node id, and IP for non-loopback addresses; loopback is never IP-banned so one bad local process cannot block every local node).
 * Known peer addresses are persisted in the database, exchanged with `get_peers`, retried with failure counting (dropped after 10 failures, configured seeds never), and used to reconnect after restarts.
 * P2P binds to 127.0.0.1 by default. There are no administrative P2P messages.
 
 ## 11. Stored data
 
-SQLite, schema version tracked with `PRAGMA user_version` and forward-only migrations. Schema v2 adds the `peers` table. A database
+SQLite, schema version tracked with `PRAGMA user_version` and forward-only migrations (v3 adds `total_work` to blocks and the `side_blocks` table). Schema v2 adds the `peers` table. A database
 records its `network_id` and genesis hash and is refused by any other network. Legacy V0.1 databases are refused, never modified.
