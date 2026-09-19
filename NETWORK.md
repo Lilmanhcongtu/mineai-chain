@@ -24,7 +24,8 @@ Separation guarantees (all covered by tests):
 * **Reorganization depth limit:** nodes refuse reorganizations deeper than 100 blocks (policy, section 8.5). A partition that outlasts this would split the network permanently and require a manual resync.
 * **Dynamic difficulty (Milestone 5):** the difficulty is retargeted every block towards a 60-second average (LWMA over median-filtered timestamps, PROTOCOL.md 5.10). Difficulty is a numeric target, no longer "leading hex zeros". The first 5 blocks use the initial difficulty (65,536 on devnet); a much faster miner will see it double per block until it reaches equilibrium. Blocks may be stamped at most 5 minutes ahead of a node's clock, so keep clocks synchronized.
 * Nothing is hosted publicly: there are no seed nodes and no public testnet.
-* Planned next: wallet/miner/explorer (6), private then public testnet (7-8).
+* **Milestone 6:** wallet, miner, explorer and a Windows package (see README). The API is versioned under `/api/v1`.
+* Planned next: private testnet (7), public testnet candidate (8).
 
 ## Running a node
 

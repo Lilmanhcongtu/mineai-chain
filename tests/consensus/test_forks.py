@@ -437,3 +437,26 @@ def test_locator_shape_and_use(tmp_path):
     assert len(n.blocks_after_locator(["ab" * 32], 5)) == 5        # unknown locator -> from height 1
     assert n.blocks_after_locator(["ab" * 32], 5)[0]["height"] == 1
     assert len(n.blocks_after_locator(n.locator(), 64)) == 0       # already in sync
+
+
+def test_address_history_follows_reorganizations(tmp_path):
+    """A wallet must never show transactions (or mining rewards) from an abandoned branch."""
+    n, alice = new_node(tmp_path, blocks=3)
+    y = clone(n, tmp_path, "y.db")
+    bob, carol = Acct(), Acct()
+    tx = alice.tx(bob, 5, nonce=1, timestamp=n.now())
+    n.submit_transaction(tx)
+    mine(n, alice); n.clock.advance(60)                               # block 4 (old branch) confirms alice -> bob
+    assert n.address_history(bob.address)["total"] == 1
+    assert n.address_history(alice.address)["total"] == 3 + 1 + 1     # 4 blocks mined + 1 outgoing transfer
+    for b in extend(y, carol, 2):                                     # heavier competing branch by carol
+        n.process_block(b)
+    assert n.reorg_count == 1
+    bob_hist = n.address_history(bob.address)
+    assert bob_hist["total"] == 0 and bob_hist["transactions"] == []  # the confirmed transfer is gone...
+    assert [p["txid"] for p in bob_hist["pending"]] == [tx["txid"]]   # ...and shows as pending again (mempool restored)
+    assert n.address_history(alice.address)["total"] == 3             # only her 3 surviving blocks remain
+    assert n.address_history(carol.address)["total"] == 2
+    mine(n, carol); n.clock.advance(60)                               # confirmed again on the new branch
+    assert n.address_history(bob.address)["total"] == 1 and n.address_history(bob.address)["pending"] == []
+    check_invariants(n)

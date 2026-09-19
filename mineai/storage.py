@@ -100,7 +100,38 @@ def _migration_3(conn: sqlite3.Connection) -> None:
         """)
 
 
-MIGRATIONS = [_migration_1, _migration_2, _migration_3]      # index i migrates schema version i -> i+1
+def _tx_addresses(block_body: list[dict]) -> list[tuple[str, int, str]]:
+    """(address, position, txid) rows for every address a block's transactions touch."""
+    rows = []
+    for position, tx in enumerate(block_body):
+        if tx.get("type") == "coinbase":
+            rows.append((tx["recipient"], position, tx["txid"]))
+        else:
+            rows.append((tx["sender"], position, tx["txid"]))
+            rows.append((tx["recipient"], position, tx["txid"]))
+    return rows
+
+
+def _migration_4(conn: sqlite3.Connection) -> None:
+    # Which transactions touch which address (wallet history, explorer address pages). Backfilled from
+    # the stored blocks; maintained by apply_block / disconnect_tip so it follows reorganizations.
+    _run_statements(conn,
+        """
+        CREATE TABLE tx_addresses (
+            address TEXT NOT NULL,
+            height INTEGER NOT NULL,
+            position INTEGER NOT NULL,
+            txid TEXT NOT NULL,
+            PRIMARY KEY (address, height, position)
+        )
+        """)
+    for height, body in conn.execute("SELECT height, body_json FROM blocks ORDER BY height").fetchall():
+        for address, position, txid in _tx_addresses(json.loads(body)):
+            conn.execute("INSERT OR IGNORE INTO tx_addresses(address,height,position,txid) VALUES(?,?,?,?)",
+                         (address, height, position, txid))
+
+
+MIGRATIONS = [_migration_1, _migration_2, _migration_3, _migration_4]      # index i migrates schema version i -> i+1
 
 WIRE_KEYS = ("height", "previous_hash", "merkle_root", "timestamp", "difficulty", "nonce", "hash", "transactions")
 
@@ -275,6 +306,9 @@ class Storage:
             for position, tx in enumerate(block["transactions"]):
                 self.conn.execute("INSERT INTO tx_index(txid,height,position) VALUES(?,?,?)",
                                   (tx["txid"], block["height"], position))
+            for address, position, txid in _tx_addresses(block["transactions"]):
+                self.conn.execute("INSERT INTO tx_addresses(address,height,position,txid) VALUES(?,?,?,?)",
+                                  (address, block["height"], position, txid))
             for address, (balance, nonce) in changes.items():
                 self.conn.execute(
                     "INSERT INTO accounts(address,balance,nonce) VALUES(?,?,?) "
@@ -340,6 +374,7 @@ class Storage:
                     "ON CONFLICT(address) DO UPDATE SET balance=excluded.balance, nonce=excluded.nonce",
                     (address, balance, nonce))
             self.conn.execute("DELETE FROM tx_index WHERE height=?", (tip["height"],))
+            self.conn.execute("DELETE FROM tx_addresses WHERE height=?", (tip["height"],))
             self.conn.execute("DELETE FROM state_diffs WHERE height=?", (tip["height"],))
             self.conn.execute("DELETE FROM blocks WHERE height=?", (tip["height"],))
             self.meta_set("minted_supply", str(int(self.meta_get("minted_supply") or 0) - tip["subsidy"]))
@@ -397,6 +432,32 @@ class Storage:
     def total_balances(self) -> int:
         with self.lock:
             return int(self.conn.execute("SELECT COALESCE(SUM(balance),0) FROM accounts").fetchone()[0])
+
+    def address_txs(self, address: str, limit: int, offset: int) -> list[tuple[int, int, str]]:
+        """(height, position, txid) of transactions touching `address`, newest first."""
+        with self.lock:
+            rows = self.conn.execute(
+                "SELECT height, position, txid FROM tx_addresses WHERE address=? "
+                "ORDER BY height DESC, position DESC LIMIT ? OFFSET ?", (address, limit, offset)).fetchall()
+            return [(r[0], r[1], r[2]) for r in rows]
+
+    def address_tx_count(self, address: str) -> int:
+        with self.lock:
+            return int(self.conn.execute("SELECT COUNT(*) FROM tx_addresses WHERE address=?", (address,)).fetchone()[0])
+
+    def mempool_fee_median(self) -> int | None:
+        with self.lock:
+            fees = sorted(r[0] for r in self.conn.execute("SELECT fee FROM mempool").fetchall())
+            return fees[len(fees) // 2] if fees else None
+
+    def mempool_for_recipient(self, address: str) -> list[dict]:
+        with self.lock:
+            out = []
+            for row in self.conn.execute("SELECT tx_json FROM mempool ORDER BY fee DESC").fetchall():
+                tx = json.loads(row[0])
+                if tx["recipient"] == address:
+                    out.append(tx)
+            return out
 
     def tx_location(self, txid: str) -> tuple[int, int] | None:
         with self.lock:

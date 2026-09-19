@@ -16,7 +16,7 @@
 .\.venv\Scripts\python.exe -m pytest --cov=mineai --cov-report=term-missing
 ```
 
-Python 3.10+ is supported.
+Python 3.10+ is supported. To build the Windows package: `.\scripts\build_windows.ps1` (runs the tests first; `-SkipTests` to skip).
 
 ## Layout
 

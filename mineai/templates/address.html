@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Address{% endblock %}
+{% block body %}
+<h1>Address</h1>
+<div class="kv">
+  <div>Address</div><div class="mono">{{ account.address }}</div>
+  <div>Confirmed balance</div><div>{{ account.balance | mai }} MAI</div>
+  <div>Immature (mining rewards)</div><div>{{ account.immature_balance | mai }} MAI</div>
+  <div>Pending outgoing</div><div>{{ account.pending_outgoing | mai }} MAI</div>
+  <div>Available to spend</div><div>{{ account.available_balance | mai }} MAI</div>
+  <div>Transactions sent</div><div>{{ account.confirmed_nonce }}</div>
+</div>
+<h2>History ({{ hist.total }} confirmed)</h2>
+{% if hist.pending or hist.transactions %}
+<table><thead><tr><th></th><th>Transaction</th><th>Block</th><th>Time</th><th>Counterparty</th><th>Amount</th><th>Confirmations</th></tr></thead><tbody>
+{% for t in hist.pending + hist.transactions %}<tr>
+<td><span class="pill {{ 'pending' if t.status == 'pending' else t.direction }}">{{ 'pending ' + t.direction if t.status == 'pending' else t.direction }}</span></td>
+<td class="mono"><a href="/explorer/tx/{{ t.txid }}">{{ t.txid | short(16) }}</a></td>
+<td>{% if t.height is defined %}<a href="/explorer/block/{{ t.height }}">{{ t.height }}</a>{% else %}—{% endif %}</td>
+<td>{% if t.timestamp is defined %}{{ t.timestamp | when }}{% else %}—{% endif %}</td>
+<td class="mono">{% if t.counterparty %}<a href="/explorer/address/{{ t.counterparty }}">{{ t.counterparty | short(16) }}</a>{% else %}—{% endif %}</td>
+<td>{{ '-' if t.direction == 'out' else '+' }}{{ t.amount | mai }} MAI{% if t.direction == 'out' %} <span class="sub">(+{{ t.fee | mai }} fee)</span>{% endif %}</td>
+<td>{{ t.confirmations }}</td>
+</tr>{% endfor %}
+</tbody></table>
+{% else %}<p class="sub">No transactions yet.</p>{% endif %}
+<div class="pager">
+  {% if page > 1 %}<a href="/explorer/address/{{ account.address }}?page={{ page - 1 }}">← newer</a>{% endif %}
+  <span>page {{ page }} of {{ pages }}</span>
+  {% if page < pages %}<a href="/explorer/address/{{ account.address }}?page={{ page + 1 }}">older →</a>{% endif %}
+</div>
+{% endblock %}

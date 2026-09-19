@@ -210,25 +210,30 @@ def test_reorg_ready_undo_data_restores_previous_state(tmp_path):
 
 def test_upgrade_from_older_schema_preserves_data_and_backfills_work(tmp_path):
     """Strip a real chain back to the schema-v1 layout, then open it with the current software:
-    the real migrations (peers table, total_work backfill, side_blocks) must run over existing data."""
+    the real migrations (peers, total_work backfill, side_blocks, address index backfill) run over existing data."""
     chain, alice = funded(tmp_path, blocks=4)
     chain.submit_transaction(alice.tx(Acct(), 2))
+    mine(chain, alice)
+    history_before = chain.address_history(alice.address, limit=50)
     chain.close()
     path = tmp_path / "chain.db"
     con = sqlite3.connect(path, isolation_level=None)
-    con.execute("DROP TABLE side_blocks")
-    con.execute("DROP TABLE peers")
+    for table in ("side_blocks", "peers", "tx_addresses"):
+        con.execute(f"DROP TABLE {table}")
     con.execute("ALTER TABLE blocks DROP COLUMN total_work")
     con.execute("PRAGMA user_version=1")
     con.close()
     reopened = Blockchain(path, TEST, clock=Clock())
     assert reopened.storage.conn.execute("PRAGMA user_version").fetchone()[0] == len(MIGRATIONS)
-    assert reopened.tip()["height"] == 4 and reopened.storage.mempool_count() == 1
-    assert reopened.tip()["total_work"] == str(4 * 16)                 # backfilled: 4 blocks of difficulty 1
+    assert reopened.tip()["height"] == 5 and reopened.storage.mempool_count() == 0
+    assert reopened.tip()["total_work"] == str(5 * 16)                 # backfilled: 5 blocks of difficulty 16
     assert reopened.storage.peers_count() == 0 and reopened.storage.side_count() == 0
+    history_after = reopened.address_history(alice.address, limit=50)
+    assert history_after["total"] == history_before["total"] == 6      # 5 mined blocks + 1 outgoing transfer
+    assert history_after["transactions"] == history_before["transactions"]      # the backfill is exact
     reopened.verify_integrity()                                        # checks cumulative work block by block
     mine(reopened, alice)                                              # and the chain keeps working
-    assert reopened.tip()["height"] == 5
+    assert reopened.tip()["height"] == 6
 
 
 def test_peer_address_storage(tmp_path):

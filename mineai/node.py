@@ -9,15 +9,16 @@ from collections import deque
 from pathlib import Path
 
 import uvicorn
-from fastapi import Body, FastAPI, HTTPException, Query, Request
+from fastapi import APIRouter, Body, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import __version__, config, log as mlog
 from .blockchain import Blockchain
 from .config import COIN_NAME, TICKER
+from .crypto import validate_address
 from .consensus import ValidationError
 from .log import event
 from .p2p.node import P2PConfig, P2PNode
@@ -100,12 +101,30 @@ class RateLimitMiddleware:
         await self.app(scope, receive, send)
 
 
+def _fmt_hashrate(value) -> str:
+    if value is None:
+        return "n/a"
+    for unit in ("H/s", "kH/s", "MH/s", "GH/s", "TH/s"):
+        if value < 1000 or unit == "TH/s":
+            return f"{value:.1f} {unit}" if unit != "H/s" else f"{value:.0f} H/s"
+        value /= 1000
+    return f"{value:.1f} TH/s"
+
+
+def _fmt_time(timestamp) -> str:
+    return time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(int(timestamp)))
+
+
 def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES,
                rate_limit_per_minute: int = config.RATE_LIMIT_PER_MINUTE,
                local_hosts: frozenset[str] = LOCAL_HOSTS, p2p: P2PNode | None = None) -> FastAPI:
     params = chain.params
-    app = FastAPI(title=f"MineAI Node ({params.name})", version=__version__)
+    app = FastAPI(title=f"MineAI Node ({params.name})", version=__version__,
+                  description="Read API, transaction submission and (loopback-only) mining endpoints. "
+                              "Versioned under /api/v1; the unversioned /api paths are kept as aliases.")
     templates = Jinja2Templates(directory=str(Path(__file__).with_name("templates")))
+    templates.env.filters.update(mai=atomic_to_mai, hashrate=_fmt_hashrate, when=_fmt_time,
+                                 short=lambda h, n=16: (h[:n] + "…") if isinstance(h, str) and len(h) > n else h)
     app.state.chain = chain
     app.state.p2p = p2p
     app.add_middleware(RateLimitMiddleware, per_minute=rate_limit_per_minute)
@@ -145,19 +164,10 @@ def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES
             raise HTTPException(404, "block not found")
         return block
 
-    # ---- health / status
-    @app.get("/api/health")
-    def health():
-        return {"status": "ok"}
-
-    @app.get("/api/ready")
-    def ready():
-        return {"status": "ready", "height": chain.tip()["height"]}
-
-    @app.get("/api/status")
-    def status():
+    def status_info() -> dict:
         tip = chain.tip()
         supply = chain.minted_supply()
+        sync = "p2p_disabled" if p2p is None else p2p.sync_status()
         return {
             "name": COIN_NAME, "ticker": TICKER, "version": __version__,
             "network": params.name, "network_id": params.network_id, "label": params.label,
@@ -166,30 +176,68 @@ def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES
             "dynamic_difficulty": params.dynamic_difficulty, "target_spacing": params.target_spacing,
             "total_work": str(chain.tip_work()), "reorgs_since_start": chain.reorg_count,
             "side_blocks": chain.storage.side_count(),
+            "estimated_hashrate": chain.estimated_hashrate(),
             "block_reward_atomic": params.block_reward, "block_reward_mai": atomic_to_mai(params.block_reward),
             "minted_supply_atomic": supply, "minted_supply_mai": atomic_to_mai(supply),
+            "circulating_supply_mai": atomic_to_mai(supply),
             "max_supply_atomic": params.max_supply, "max_supply_mai": atomic_to_mai(params.max_supply),
             "coinbase_maturity": params.coinbase_maturity,
             "mempool_size": chain.storage.mempool_count(),
             "peer_count": len(p2p.peers) if p2p else 0,
-            "p2p_enabled": p2p is not None,
+            "p2p_enabled": p2p is not None, "sync_status": sync,
         }
 
-    @app.get("/api/peers")
-    def peers():
-        """Read-only. Shows peer addresses and heights only; never anything administrative."""
-        return {"count": len(p2p.peers) if p2p else 0,
-                "peers": [{k: v for k, v in i.items() if k != "score"} for i in p2p.peer_infos()] if p2p else []}
+    def classify(query: str) -> dict:
+        q = query.strip()
+        if HEIGHT_RE.match(q):
+            if chain.storage.get_block_by_height(int(q)):
+                return {"type": "block", "value": q}
+        elif HASH_RE.match(q):
+            block = chain.storage.get_block_by_hash(q)
+            if block:
+                return {"type": "block", "value": block["hash"]}
+            if chain.find_transaction(q):
+                return {"type": "tx", "value": q}
+        elif validate_address(q, params.address_prefix):
+            return {"type": "address", "value": q}
+        raise HTTPException(404, "nothing found for that search")
 
-    @app.get("/api/blocks")
+    api = APIRouter()
+
+    # ---- health / status
+    @api.get("/health")
+    def health():
+        return {"status": "ok"}
+
+    @api.get("/ready")
+    def ready():
+        return {"status": "ready", "height": chain.tip()["height"],
+                "sync_status": "p2p_disabled" if p2p is None else p2p.sync_status()}
+
+    @api.get("/status")
+    def status():
+        return status_info()
+
+    @api.get("/fee")
+    def fee():
+        """Fee information for wallets: consensus minimum, default, and what pending transactions currently pay."""
+        return {"min_fee_atomic": params.min_fee, "default_fee_atomic": params.default_fee,
+                "mempool_median_fee_atomic": chain.storage.mempool_fee_median(),
+                "mempool_size": chain.storage.mempool_count()}
+
+    @api.get("/search")
+    def search(q: str = Query(..., min_length=1, max_length=100)):
+        return classify(q)
+
+    @api.get("/blocks")
     def blocks(limit: int = Query(25, ge=1, le=100), offset: int = Query(0, ge=0, le=10_000_000)):
         return chain.storage.list_blocks(limit, offset)
 
-    @app.get("/api/block/{identifier}")
+    @api.get("/block/{identifier}")
     def block(identifier: str):
         return lookup_block(identifier)
 
-    @app.get("/api/tx/{txid}")
+    @api.get("/tx/{txid}")
     def tx(txid: str):
         if not HASH_RE.match(txid):
             raise ValidationError("txid must be 64 lower-case hex characters", "bad_identifier")
@@ -198,15 +246,26 @@ def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES
             raise HTTPException(404, "transaction not found")
         return found
 
-    @app.get("/api/mempool")
+    @api.get("/mempool")
     def mempool(limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=100_000)):
         return {"count": chain.storage.mempool_count(), "transactions": chain.storage.mempool_list(limit, offset)}
 
-    @app.get("/api/account/{address}")
+    @api.get("/peers")
+    def peers():
+        """Read-only. Shows peer addresses and heights only; never anything administrative."""
+        return {"count": len(p2p.peers) if p2p else 0,
+                "peers": [{k: v for k, v in i.items() if k != "score"} for i in p2p.peer_infos()] if p2p else []}
+
+    @api.get("/account/{address}")
     def account(address: str):
         return chain.account(address)
 
-    @app.post("/api/transactions")
+    @api.get("/address/{address}/transactions")
+    def address_transactions(address: str, limit: int = Query(25, ge=1, le=100),
+                             offset: int = Query(0, ge=0, le=10_000_000)):
+        return chain.address_history(address, limit, offset)
+
+    @api.post("/transactions")
     def submit_transaction(payload: dict = Body(...)):
         accepted = chain.submit_transaction(payload)
         if p2p:
@@ -214,12 +273,12 @@ def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES
         return {"accepted": True, "txid": accepted["txid"]}
 
     # ---- mining (local only)
-    @app.get("/api/mining/template")
+    @api.get("/mining/template")
     def mining_template(request: Request, address: str = Query(..., max_length=100)):
         require_local(request)
         return chain.mining_template(address)
 
-    @app.post("/api/mining/submit")
+    @api.post("/mining/submit")
     def mining_submit(request: Request, payload: dict = Body(...)):
         require_local(request)
         accepted = chain.submit_mined_block(payload)
@@ -227,19 +286,57 @@ def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES
             p2p.announce_block(accepted)
         return {"accepted": True, "height": accepted["height"], "hash": accepted["hash"]}
 
-    # ---- explorer
+    app.include_router(api, prefix="/api/v1")
+    app.include_router(api, prefix="/api", include_in_schema=False)      # unversioned aliases (kept for compatibility)
+
+    # ---- explorer (read-only HTML: no keys, no admin actions)
+    PAGE = 20
+
+    def render(request: Request, name: str, **ctx):
+        return templates.TemplateResponse(request=request, name=name, context={
+            "label": params.label, "network": params.name, "version": __version__, **ctx})
+
     @app.get("/", response_class=HTMLResponse)
-    def explorer(request: Request):
-        return templates.TemplateResponse(request=request, name="explorer.html", context={
-            "latest": chain.tip(), "supply": atomic_to_mai(chain.minted_supply()),
-            "max_supply": atomic_to_mai(params.max_supply), "mempool": chain.storage.mempool_count(),
-            "blocks": chain.storage.list_blocks(30), "atomic_to_mai": atomic_to_mai,
-            "label": params.label, "network": params.name, "version": __version__})
+    def explorer(request: Request, page: int = Query(1, ge=1, le=1_000_000)):
+        info = status_info()
+        rows = chain.storage.list_blocks(PAGE, (page - 1) * PAGE)
+        pages = max(1, (info["height"] + 1 + PAGE - 1) // PAGE)
+        return render(request, "explorer.html", info=info, blocks=rows, page=page, pages=pages)
+
+    @app.get("/explorer/search")
+    def explorer_search(q: str = Query("", max_length=100)):
+        try:
+            found = classify(q) if q.strip() else None
+        except HTTPException:
+            found = None
+        if not found:
+            return HTMLResponse(status_code=404, content=templates.get_template("notfound.html").render(
+                label=params.label, network=params.name, version=__version__, query=q))
+        return RedirectResponse(f"/explorer/{found['type']}/{found['value']}", status_code=303)
 
     @app.get("/explorer/block/{identifier}", response_class=HTMLResponse)
     def explorer_block(request: Request, identifier: str):
-        return templates.TemplateResponse(request=request, name="block.html", context={
-            "block": lookup_block(identifier), "atomic_to_mai": atomic_to_mai, "label": params.label})
+        b = lookup_block(identifier)
+        tip = chain.tip()["height"]
+        return render(request, "block.html", block=b, confirmations=tip - b["height"] + 1,
+                      has_next=b["height"] < tip, has_prev=b["height"] > 0)
+
+    @app.get("/explorer/tx/{txid}", response_class=HTMLResponse)
+    def explorer_tx(request: Request, txid: str):
+        if not HASH_RE.match(txid):
+            raise HTTPException(404, "transaction not found")
+        found = chain.find_transaction(txid)
+        if not found:
+            raise HTTPException(404, "transaction not found")
+        block = chain.storage.get_block_by_height(found["height"]) if found["status"] == "confirmed" else None
+        return render(request, "tx.html", found=found, tx=found["transaction"], block=block)
+
+    @app.get("/explorer/address/{address}", response_class=HTMLResponse)
+    def explorer_address(request: Request, address: str, page: int = Query(1, ge=1, le=1_000_000)):
+        info = chain.account(address)                                    # 400 for an invalid address
+        hist = chain.address_history(address, PAGE, (page - 1) * PAGE)
+        pages = max(1, (hist["total"] + PAGE - 1) // PAGE)
+        return render(request, "address.html", account=info, hist=hist, page=page, pages=pages)
 
     return app
 

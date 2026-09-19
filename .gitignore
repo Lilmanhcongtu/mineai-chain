@@ -30,6 +30,7 @@ demo/
 
 # Python / build artifacts
 .venv/
+.build-venv/
 venv/
 __pycache__/
 *.py[cod]

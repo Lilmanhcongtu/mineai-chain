@@ -1,5 +1,36 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MineAI Block {{ block.height }} — {{ label }}</title>
-<style>body{font-family:Segoe UI,Arial,sans-serif;background:#090d18;color:#eaf0ff;margin:0}.w{max-width:1000px;margin:auto;padding:36px 20px}.c{background:#11182a;border:1px solid #22304f;border-radius:16px;padding:20px;margin:16px 0}.mono{font-family:Consolas,monospace;word-break:break-all;color:#aac8ff}.k{color:#8294bb}a{color:#82b1ff;text-decoration:none}pre{white-space:pre-wrap;word-break:break-all}.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#5a2a1c;color:#ffd3bd;font-size:12px}</style></head><body><div class="w"><a href="/">← Explorer</a><h1>Block #{{ block.height }} <span class="badge">{{ label }}</span></h1>
-<div class="c"><div><span class="k">Hash:</span> <span class="mono">{{ block.hash }}</span></div><p><span class="k">Previous:</span> <span class="mono">{{ block.previous_hash }}</span></p><p><span class="k">Merkle root:</span> <span class="mono">{{ block.merkle_root }}</span></p><p><span class="k">Miner:</span> <span class="mono">{{ block.miner }}</span></p><p><span class="k">Timestamp:</span> {{ block.timestamp }} · <span class="k">Nonce:</span> {{ block.nonce }} · <span class="k">Difficulty:</span> {{ block.difficulty }}</p><p><span class="k">Subsidy:</span> {{ atomic_to_mai(block.subsidy) }} MAI · <span class="k">Fees:</span> {{ atomic_to_mai(block.fees) }} MAI</p></div>
-<h2>Transactions</h2>{% for tx in block.transactions %}<div class="c"><pre>{{ tx | tojson(indent=2) }}</pre></div>{% endfor %}
-</div></body></html>
+{% extends "base.html" %}
+{% block title %}Block {{ block.height }}{% endblock %}
+{% block body %}
+<h1>Block #{{ block.height }}</h1>
+<div class="pager">
+  {% if has_prev %}<a href="/explorer/block/{{ block.height - 1 }}">← previous</a>{% endif %}
+  {% if has_next %}<a href="/explorer/block/{{ block.height + 1 }}">next →</a>{% endif %}
+</div>
+<div class="kv">
+  <div>Hash</div><div class="mono">{{ block.hash }}</div>
+  <div>Previous block</div><div class="mono">{% if has_prev %}<a href="/explorer/block/{{ block.previous_hash }}">{{ block.previous_hash }}</a>{% else %}—{% endif %}</div>
+  <div>Confirmations</div><div>{{ confirmations }}</div>
+  <div>Time</div><div>{{ block.timestamp | when }} ({{ block.timestamp }})</div>
+  <div>Miner</div><div class="mono">{% if block.miner == "GENESIS" %}genesis (no reward){% else %}<a href="/explorer/address/{{ block.miner }}">{{ block.miner }}</a>{% endif %}</div>
+  <div>Difficulty</div><div>{{ "{:,}".format(block.difficulty) }} &nbsp; <span class="sub">total work {{ "{:,}".format(block.total_work | int) }}</span></div>
+  <div>Nonce</div><div>{{ block.nonce }}</div>
+  <div>Merkle root</div><div class="mono">{{ block.merkle_root }}</div>
+  <div>Reward</div><div>{{ block.subsidy | mai }} MAI + {{ block.fees | mai }} MAI fees</div>
+</div>
+<h2>Transactions ({{ block.transactions | length }})</h2>
+{% if block.transactions %}
+<table><thead><tr><th>#</th><th>Transaction</th><th>From</th><th>To</th><th>Amount</th><th>Fee</th></tr></thead><tbody>
+{% for t in block.transactions %}<tr>
+<td>{{ loop.index0 }}</td>
+<td class="mono"><a href="/explorer/tx/{{ t.txid }}">{{ t.txid | short(18) }}</a></td>
+{% if t.type == "coinbase" %}
+<td>coinbase</td><td class="mono"><a href="/explorer/address/{{ t.recipient }}">{{ t.recipient | short(18) }}</a></td><td>{{ t.amount | mai }} MAI</td><td>—</td>
+{% else %}
+<td class="mono"><a href="/explorer/address/{{ t.sender }}">{{ t.sender | short(18) }}</a></td>
+<td class="mono"><a href="/explorer/address/{{ t.recipient }}">{{ t.recipient | short(18) }}</a></td>
+<td>{{ t.amount | mai }} MAI</td><td>{{ t.fee | mai }} MAI</td>
+{% endif %}
+</tr>{% endfor %}
+</tbody></table>
+{% else %}<p class="sub">The genesis block contains no transactions.</p>{% endif %}
+{% endblock %}

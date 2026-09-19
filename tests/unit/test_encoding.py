@@ -155,10 +155,20 @@ def test_atomic_conversion_is_exact():
 
 
 @pytest.mark.parametrize("bad", ["0", "-1", "0.0000001", "abc", "", "NaN", "Infinity", "1e400",
-                                 "9999999999999999999999", 0.1, True, None])
+                                 "9999999999999999999999", 0.1, True, None,
+                                 "1e3", "1E3", "1e-6", "1_0", "+5", ".5", "5.", "0x10", "5 0", "٥", "1,5", "--1", "1.2.3",
+                                 "0.0", "00.000000"])
 def test_bad_amounts_rejected(bad):
     with pytest.raises((ValueError, TypeError)):
         mai_to_atomic(bad)
+
+
+def test_amount_parsing_accepts_only_plain_decimals():
+    assert mai_to_atomic(" 5 ") == 5_000_000                        # surrounding whitespace is tolerated
+    assert mai_to_atomic("007") == 7_000_000 and mai_to_atomic("0.5") == 500_000 and mai_to_atomic("12.345678") == 12_345_678
+    assert mai_to_atomic("9223372036854.775807") == 9_223_372_036_854_775_807      # the largest representable amount
+    with pytest.raises(ValueError):
+        mai_to_atomic("9223372036854.775808")                       # one atomic unit too many
 
 
 def test_max_supply_fits_in_consensus_integer_range():

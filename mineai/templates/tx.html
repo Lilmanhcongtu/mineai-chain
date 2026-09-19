@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Transaction{% endblock %}
+{% block body %}
+<h1>Transaction</h1>
+<div class="kv">
+  <div>Transaction id</div><div class="mono">{{ tx.txid }}</div>
+  <div>Status</div><div>{% if found.status == "confirmed" %}<span class="pill in">confirmed</span> · {{ found.confirmations }} confirmation{{ "" if found.confirmations == 1 else "s" }}{% else %}<span class="pill pending">pending in mempool</span>{% endif %}</div>
+  {% if block %}
+  <div>Block</div><div><a href="/explorer/block/{{ block.height }}">#{{ block.height }}</a> <span class="mono">{{ block.hash | short(24) }}</span> · position {{ found.index }}</div>
+  <div>Block time</div><div>{{ block.timestamp | when }}</div>
+  {% endif %}
+  {% if tx.type == "coinbase" %}
+  <div>Type</div><div>coinbase (block reward)</div>
+  <div>Recipient</div><div class="mono"><a href="/explorer/address/{{ tx.recipient }}">{{ tx.recipient }}</a></div>
+  <div>Subsidy</div><div>{{ tx.subsidy | mai }} MAI</div>
+  <div>Fees collected</div><div>{{ tx.fees | mai }} MAI</div>
+  <div>Total</div><div>{{ tx.amount | mai }} MAI</div>
+  {% else %}
+  <div>From</div><div class="mono"><a href="/explorer/address/{{ tx.sender }}">{{ tx.sender }}</a></div>
+  <div>To</div><div class="mono"><a href="/explorer/address/{{ tx.recipient }}">{{ tx.recipient }}</a></div>
+  <div>Amount</div><div>{{ tx.amount | mai }} MAI</div>
+  <div>Fee</div><div>{{ tx.fee | mai }} MAI</div>
+  <div>Sender nonce</div><div>{{ tx.nonce }}</div>
+  <div>Signed at</div><div>{{ tx.timestamp | when }}</div>
+  <div>Public key</div><div class="mono">{{ tx.public_key }}</div>
+  <div>Signature</div><div class="mono">{{ tx.signature }}</div>
+  {% endif %}
+</div>
+{% endblock %}

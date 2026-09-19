@@ -248,6 +248,47 @@ class Blockchain:
                 "pending_outgoing": pending_out,
             }
 
+    def estimated_hashrate(self, blocks: int = 30) -> float | None:
+        """Network hashes/second estimated from the work and time span of the last `blocks` blocks."""
+        tip = self.tip()
+        span = min(blocks, tip["height"] - 1)
+        if span < 2:
+            return None
+        older = self.storage.get_block_by_height(tip["height"] - span)
+        elapsed = tip["timestamp"] - older["timestamp"]
+        if elapsed <= 0:
+            return None
+        return (int(tip["total_work"]) - int(older["total_work"])) / elapsed
+
+    def address_history(self, address: str, limit: int = 25, offset: int = 0) -> dict:
+        """Confirmed transactions touching `address` (newest first, paginated) plus its pending ones."""
+        if not validate_address(address, self.params.address_prefix):
+            raise ValidationError("invalid MAI address", "bad_address")
+        with self.lock:
+            tip_height = self.tip()["height"]
+            items, cache = [], {}
+            for height, position, txid in self.storage.address_txs(address, limit, offset):
+                block = cache.get(height) or cache.setdefault(height, self.storage.get_block_by_height(height))
+                tx = block["transactions"][position]
+                if tx.get("type") == "coinbase":
+                    item = {"direction": "mined", "amount": tx["amount"], "fee": 0, "counterparty": None}
+                elif tx["sender"] == address:
+                    item = {"direction": "out", "amount": tx["amount"], "fee": tx["fee"], "counterparty": tx["recipient"]}
+                else:
+                    item = {"direction": "in", "amount": tx["amount"], "fee": tx["fee"], "counterparty": tx["sender"]}
+                items.append({"status": "confirmed", "txid": txid, "height": height, "position": position,
+                              "timestamp": block["timestamp"], "confirmations": tip_height - height + 1, **item})
+            pending = []
+            if offset == 0:                                        # pending transactions are shown on the first page only
+                for tx in self.storage.mempool_for_sender(address):
+                    pending.append({"status": "pending", "txid": tx["txid"], "direction": "out", "amount": tx["amount"],
+                                    "fee": tx["fee"], "counterparty": tx["recipient"], "confirmations": 0})
+                for tx in self.storage.mempool_for_recipient(address):
+                    pending.append({"status": "pending", "txid": tx["txid"], "direction": "in", "amount": tx["amount"],
+                                    "fee": tx["fee"], "counterparty": tx["sender"], "confirmations": 0})
+            return {"address": address, "total": self.storage.address_tx_count(address),
+                    "limit": limit, "offset": offset, "pending": pending, "transactions": items}
+
     def find_transaction(self, txid: str) -> dict | None:
         loc = self.storage.tx_location(txid)
         if loc:

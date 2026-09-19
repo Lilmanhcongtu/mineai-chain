@@ -209,6 +209,15 @@ class P2PNode:
     def peer_infos(self) -> list[dict]:
         return [p.info() for p in self.peers.values()]
 
+    def sync_status(self) -> str:
+        """no_peers | syncing | synced (best effort: based on what peers told us)."""
+        if not self.peers:
+            return "no_peers"
+        ours = self.chain.tip_work()
+        if any(p.syncing or p.total_work > ours for p in self.peers.values()):
+            return "syncing"
+        return "synced"
+
     # ------------------------------------------------------------------ bans and scoring
     def _ban_keys(self, peer: Peer) -> list[str]:
         keys = [peer.node_id] if peer.node_id else []

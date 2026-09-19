@@ -6,7 +6,7 @@ CPU SHA-256 proof of work, Ed25519 wallets, REST API and a local explorer.
 > **Not production software.** No independent audit, only tested on localhost and in simulation.
 > Coins on devnet/testnet have **no monetary value**. There is no mainnet, no presale and nothing to buy.
 
-Status: Milestone 5 (dynamic difficulty) — see `PROTOCOL.md` for the exact rules, `TOKENOMICS.md`,
+Status: Milestone 6 (wallet, miner, explorer, Windows package) — see `PROTOCOL.md` for the exact rules, `TOKENOMICS.md`,
 `NETWORK.md`, `SECURITY.md` (including known limitations) and `CONTRIBUTING.md`.
 
 ## What changed from V0.1
@@ -20,6 +20,7 @@ Status: Milestone 5 (dynamic difficulty) — see `PROTOCOL.md` for the exact rul
 
 * **Milestone 3:** multi-node P2P (handshake, discovery, tx/block relay, sync, bans) - see `PROTOCOL.md` section 10.
 * **Milestone 4:** cumulative-work chain selection, side chains, orphans, atomic reorganizations, mempool restoration - see `PROTOCOL.md` section 8.
+* **Milestone 6:** hardened wallet (locking, auto-lock, verified backup/restore, password change, interactive shell), user-controlled miner behind a pluggable proof-of-work backend, a full read-only explorer, a versioned `/api/v1`, and a Windows package with installer and checksums. RandomX is evaluated in `docs/RANDOMX_EVALUATION.md` and is **not** implemented.
 * **Milestone 5:** numeric difficulty target and per-block retargeting to ~60 s (LWMA over median-filtered timestamps) - see `PROTOCOL.md` section 5.10. Devnet was reset for this change (network id `mineai-devnet-v3`); older devnet databases are refused.
 
 ## Quick start (Windows PowerShell, Python 3.10+)
@@ -31,27 +32,52 @@ Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\demo_three_nodes.ps1     # three node processes: relay, sync, a partition and a real reorganization
 ```
 
-Run your own devnet node:
+Run your own devnet node (explorer at `http://127.0.0.1:8080`, API docs at `/docs`):
 
 ```powershell
-.\scripts\start_node.ps1           # http://127.0.0.1:8080  (explorer)  /docs (API docs)
+.\scripts\start_node.ps1
 ```
 
-In a second window (you are prompted for wallet passwords; use a throwaway one):
+### Wallet
 
 ```powershell
-$py = ".\.venv\Scripts\python.exe"
-& $py -m mineai.wallet create --wallet alice.wallet.json
-& $py -m mineai.wallet create --wallet bob.wallet.json
-& $py -m mineai.wallet address --wallet alice.wallet.json
-& $py -m mineai.miner --address <ALICE_ADDRESS> --blocks 4          # explicit, stops after 4 blocks; Ctrl+C to stop
-& $py -m mineai.wallet balance --wallet alice.wallet.json
-& $py -m mineai.wallet send --wallet alice.wallet.json --to <BOB_ADDRESS> --amount 5   # shows a preview, asks to confirm
-& $py -m mineai.miner --address <ALICE_ADDRESS> --blocks 1
+& python -m mineai wallet create   --wallet me.wallet.json          # hidden password prompt, 10+ chars, weak ones refused
+& python -m mineai wallet address  --wallet me.wallet.json
+& python -m mineai wallet balance  --wallet me.wallet.json          # confirmed / immature / pending / available
+& python -m mineai wallet history  --wallet me.wallet.json          # pending first, then confirmed, with confirmations
+& python -m mineai wallet send     --wallet me.wallet.json --to <ADDRESS> --amount 5   # preview + confirmation
+& python -m mineai wallet shell    --wallet me.wallet.json --lock-timeout 120           # interactive; auto-locks when idle
+& python -m mineai wallet backup   --wallet me.wallet.json --to D:\safe\me.backup.json --verify-password
+& python -m mineai wallet restore  --from D:\safe\me.backup.json --wallet restored.wallet.json
+& python -m mineai wallet verify   --wallet me.wallet.json
+& python -m mineai wallet change-password --wallet me.wallet.json
 ```
 
-Newly mined rewards are *immature* for a few blocks (devnet: 3) and cannot be spent yet; the wallet shows this.
-Wallet files (`*.wallet.json`) are git-ignored: back them up yourself and never share them.
+* Keys are generated from the OS CSPRNG, stored encrypted (scrypt N=2^17 + AES-256-GCM, bound to the address and network) and signed locally. Passwords are never accepted on the command line and never printed.
+* Wallet files are created owner-only, never overwritten, and backups/restores are verified copies that also refuse to overwrite.
+* `send` always shows a preview (network, from, to, amount, fee, total) and asks you to type `yes`. Amounts must be plain decimals (`5`, `0.25`; no `1e3`).
+* There is **no recovery phrase**: the encrypted file plus its password is the only backup. An established standard (BIP-39) may be added later; a custom format never will.
+* Newly mined rewards are *immature* for a few blocks (devnet: 3) and cannot be spent yet; the wallet shows this.
+
+### Miner
+
+```powershell
+& python -m mineai miner --address <ADDRESS> --blocks 4 --threads 2      # stops after 4 accepted blocks; Ctrl+C stops earlier
+```
+
+It mines only while the command runs, only to the address you give, with the thread count you choose (default: half the CPUs). It reports the aggregate hashrate, drops stale work when another block arrives, and prints why a block was rejected. There is no background or automatic mining anywhere in MineAI.
+
+### Explorer
+
+Open `http://127.0.0.1:8080`: network, node version, height, difficulty, estimated hashrate, circulating and maximum supply, mempool size, peer count and sync status; paginated latest blocks; block, transaction and address pages with confirmations and history; a search box for block heights/hashes, transaction ids and addresses. It is read-only: no keys, no forms other than search, no scripts.
+
+### Windows package
+
+```powershell
+.\scripts\build_windows.ps1                       # tests, then dist\MineAI-<version>-windows\ and .zip (+ SHA-256 checksums)
+```
+
+The package contains `mineai.exe` (node, wallet and miner in one), per-tool `.cmd` wrappers, `install.ps1`/`uninstall.ps1` (per-user, no administrator rights, no services, nothing auto-starts, your wallets and chain data are never deleted), documentation and `SHA256SUMS.txt`. It is **not code-signed**; see `README-WINDOWS.txt` inside the package.
 
 ## Configuration
 
@@ -63,14 +89,14 @@ Data lives in `<data dir>/<network>/chain.db` (default `~/.mineai`).
 ## API (devnet)
 
 ```text
-GET  /api/health  /api/ready  /api/status
-GET  /api/blocks?limit&offset        GET /api/block/{height|hash}
-GET  /api/tx/{txid}                  GET /api/mempool?limit&offset
-GET  /api/account/{address}          POST /api/transactions
-GET  /api/peers                      GET /api/mining/template?address=   POST /api/mining/submit      (loopback clients only)
+GET  /api/v1/health  /ready  /status  /fee  /peers        GET /api/v1/search?q=
+GET  /api/v1/blocks?limit&offset   /block/{height|hash}   /tx/{txid}   /mempool?limit&offset
+GET  /api/v1/account/{address}     /address/{address}/transactions?limit&offset
+POST /api/v1/transactions
+GET  /api/v1/mining/template?address=     POST /api/v1/mining/submit      (loopback clients only)
 ```
 
-Errors are uniform: `{"error": {"code": "...", "message": "..."}}`. API versioning and OpenAPI polish are planned for Milestone 9.
+Errors are uniform: `{"error": {"code": "...", "message": "..."}}`. The API is versioned under `/api/v1` (the unversioned `/api/...` paths are kept as hidden aliases); OpenAPI docs are at `/docs`.
 
 ## Tests
 
@@ -84,5 +110,5 @@ Suites: `tests/unit` (encodings, golden vectors, addresses, amounts), `tests/con
 
 ## Roadmap
 
-3 (done): three-node P2P devnet → 4 (done): fork choice and reorgs → 5 (done): dynamic difficulty → 6: wallet, miner, explorer → 7: private testnet →
+3 (done): three-node P2P devnet → 4 (done): fork choice and reorgs → 5 (done): dynamic difficulty → 6 (done): wallet, miner, explorer → 7: private testnet →
 8: public testnet candidate. Mainnet is **not** planned for launch without explicit authorization and an independent audit.

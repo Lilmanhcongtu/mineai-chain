@@ -222,6 +222,9 @@ def test_peers_endpoint_is_read_only_and_hides_scores(tmp_path):
         def announce_block(self, block):
             self.announced.append(("block", block["hash"]))
 
+        def sync_status(self):
+            return "synced"
+
     stub = Stub()
     client = TestClient(create_app(chain, p2p=stub, local_hosts=LOCAL, rate_limit_per_minute=10_000),
                         raise_server_exceptions=False)

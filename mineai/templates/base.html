@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Explorer{% endblock %} — MineAI {{ label }}</title>
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#eaf0ff;background:#090d18}*{box-sizing:border-box}body{margin:0}
+.wrap{max-width:1180px;margin:auto;padding:28px 20px}
+.top{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.brand{font-size:26px;font-weight:800}.brand a{color:inherit;text-decoration:none}
+.badge{display:inline-block;padding:4px 9px;border-radius:20px;background:#5a2a1c;color:#ffd3bd;font-size:12px;vertical-align:middle}
+.sub{color:#8fa1c7;margin-top:6px;font-size:14px}
+form.search{display:flex;gap:8px;flex:1;min-width:260px;max-width:560px}
+form.search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #22304f;background:#0e1424;color:#eaf0ff}
+form.search button{padding:10px 16px;border-radius:10px;border:0;background:#2f4a86;color:#fff;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}
+.card{background:#11182a;border:1px solid #22304f;border-radius:16px;padding:16px}
+.k{color:#8fa1c7;font-size:12px;letter-spacing:.04em;text-transform:uppercase}.v{font-size:20px;font-weight:700;margin-top:6px;word-break:break-word}
+table{width:100%;border-collapse:collapse;background:#11182a;border-radius:16px;overflow:hidden}
+th,td{padding:11px 13px;border-bottom:1px solid #202c48;text-align:left;font-size:14px}th{color:#8fa1c7}
+.mono{font-family:Consolas,monospace;color:#9fc3ff;word-break:break-all}a{color:#82b1ff;text-decoration:none}a:hover{text-decoration:underline}
+.kv{display:grid;grid-template-columns:180px 1fr;gap:8px 16px;background:#11182a;border:1px solid #22304f;border-radius:16px;padding:18px;margin:16px 0}
+.kv div:nth-child(odd){color:#8fa1c7}.pager{margin:16px 0;display:flex;gap:12px;align-items:center;color:#8fa1c7}
+.pill{padding:2px 8px;border-radius:12px;font-size:12px}.in{background:#123b2a;color:#9fe7c1}.out{background:#3b1f1f;color:#ffb3b3}.mined{background:#2a2a52;color:#c4c8ff}.pending{background:#3d3416;color:#ffe08a}
+.note{margin-top:22px;color:#7385aa;font-size:13px}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}table{display:block;overflow-x:auto}.kv{grid-template-columns:1fr}}
+</style>
+</head>
+<body><div class="wrap">
+<div class="top">
+  <div><div class="brand"><a href="/">MineAI</a> <span class="badge">{{ label }}</span></div>
+  <div class="sub">MAI Block Explorer · node {{ version }} · network {{ network }}</div></div>
+  <form class="search" action="/explorer/search" method="get">
+    <input name="q" maxlength="100" placeholder="Block height, block hash, transaction id or address" aria-label="search">
+    <button type="submit">Search</button>
+  </form>
+</div>
+{% block body %}{% endblock %}
+<div class="note">{{ label }} — development software with no monetary value. Read-only view: this page never handles keys and has no controls.</div>
+</div></body></html>

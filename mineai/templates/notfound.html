@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+{% block body %}
+<h1>Nothing found</h1>
+<p class="sub">No block, transaction or address on this network matches “{{ query }}”. Enter a block height, a 64-character block hash or transaction id, or a {{ label }} address.</p>
+{% endblock %}
