@@ -82,7 +82,7 @@ def _migration_3(conn: sqlite3.Connection) -> None:
     total = 0
     for height, difficulty in conn.execute("SELECT height, difficulty FROM blocks ORDER BY height").fetchall():
         if height > 0:
-            total += 16 ** difficulty                    # work(block) = 16^difficulty, work(genesis) = 0
+            total += difficulty                          # work(block) = difficulty, work(genesis) = 0
         conn.execute("UPDATE blocks SET total_work=? WHERE height=?", (str(total), height))
     _run_statements(conn,
         """
@@ -293,6 +293,29 @@ class Storage:
     def is_main(self, block_hash: str) -> bool:
         with self.lock:
             return self.conn.execute("SELECT 1 FROM blocks WHERE hash=?", (block_hash,)).fetchone() is not None
+
+    def header_chain(self, block_hash: str, count: int) -> list[tuple[int, int, int]]:
+        """(height, timestamp, difficulty) of `block_hash` and up to count-1 ancestors, NEWEST first.
+        Walks side branches (by hash) until it reaches the best chain, then reads the rest by height."""
+        out: list[tuple[int, int, int]] = []
+        cursor = block_hash
+        with self.lock:
+            while len(out) < count:
+                row = self.conn.execute("SELECT height FROM blocks WHERE hash=?", (cursor,)).fetchone()
+                if row is not None:
+                    rows = self.conn.execute(
+                        "SELECT height, timestamp, difficulty FROM blocks WHERE height BETWEEN ? AND ? "
+                        "ORDER BY height DESC", (max(0, row[0] - (count - len(out)) + 1), row[0])).fetchall()
+                    out.extend((r[0], r[1], r[2]) for r in rows)
+                    break
+                side = self.conn.execute("SELECT block_json, previous_hash FROM side_blocks WHERE hash=?",
+                                         (cursor,)).fetchone()
+                if side is None:
+                    break                                                 # ancestry incomplete
+                block = json.loads(side[0])
+                out.append((block["height"], block["timestamp"], block["difficulty"]))
+                cursor = side[1]
+        return out
 
     def blocks_after(self, height: int, count: int) -> list[dict]:
         with self.lock:

@@ -36,15 +36,15 @@ def test_golden_addresses():
 
 def test_golden_txid_and_signature_are_stable():
     tx = golden_tx()
-    assert tx["txid"] == "c18186ea077d7ab81d564f06733942d36a0d269c5dbe38d403eb69bce3943713"
-    assert tx["signature"].startswith("paOB39pMvfU4_52dnvpbuaAzS562")     # Ed25519 is deterministic
+    assert tx["txid"] == "716fd9667ac4fa2137b172c88e9e5f6497d5743389f58f9362d4d1094fa6381a"
+    assert tx["signature"].startswith("atQdp0e973mpXyJDwuW4WNaLt-DI")     # Ed25519 is deterministic
 
 
 def test_golden_coinbase_and_merkle():
     cb = C.coinbase_tx(D, 1, ADDR_A, 25_000_000, 10_000)
-    assert cb["txid"] == "2c81d54a91c1b28910aa04d021adc6dea0295789aa0fd605b39c3e530dddc57e"
+    assert cb["txid"] == "317b06ddb9983ac6a95aa8b49d834c43f4215912b9e47df1d42e644db7e54aaf"
     assert C.merkle_root([cb["txid"], golden_tx()["txid"]]) == \
-        "a18a6b5ea8a432f59a0d58da8d09787b192b97d48d9f5a97200d775dff932926"
+        "1158acad1b649ae284191ba20919ab73164b7431b680afed08d740fbd0e31bba"
 
 
 def test_devnet_genesis_hash_is_pinned():
@@ -67,7 +67,7 @@ def test_block_hash_matches_the_written_spec():
     g = C.genesis_block(D)
     net = D.network_id.encode()
     header = (b"MineAI/block/v1\x00" + bytes([len(net)]) + net + struct.pack(">Q", 0)
-              + bytes(32) + bytes(32) + struct.pack(">Q", D.genesis_timestamp) + struct.pack(">I", 0)
+              + bytes(32) + bytes(32) + struct.pack(">Q", D.genesis_timestamp) + struct.pack(">Q", 0)
               + struct.pack(">Q", 0))
     assert g["hash"] == hashlib.sha256(header).hexdigest()
 
@@ -191,5 +191,13 @@ def test_mainnet_is_disabled_and_unknown_profiles_rejected():
         get_params("nope")
 
 
-def test_work_grows_with_difficulty():
-    assert C.block_work(1) == 16 and C.block_work(4) == 65536
+def test_work_equals_difficulty_and_target_shrinks_with_it():
+    assert C.block_work(1) == 1 and C.block_work(65536) == 65536
+    assert C.target_for(1) == 2 ** 256 - 1                        # difficulty 1 accepts every hash
+    assert C.target_for(2) == (2 ** 256 - 1) // 2
+    assert C.target_for(65536) < C.target_for(4096) < C.target_for(16)
+    hi = "f" * 64                                                 # the largest possible hash
+    assert C.meets_target(hi, 1) and not C.meets_target(hi, 2)
+    assert C.meets_target("0" * 64, 2 ** 62)                      # the smallest hash always qualifies
+    edge = format(C.target_for(1000), "064x")                     # a hash exactly at the target qualifies...
+    assert C.meets_target(edge, 1000) and not C.meets_target(format(int(edge, 16) + 1, "064x"), 1000)

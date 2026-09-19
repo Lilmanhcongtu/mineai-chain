@@ -10,8 +10,9 @@ from mineai.blockchain import Blockchain
 from mineai.config import ATOMIC_UNITS, DEVNET
 from mineai.crypto import address_from_public_key, public_key_bytes, sign_transaction
 
-# Fast profile: difficulty 1 (16 hashes on average) and a short coinbase maturity.
-TEST = dataclasses.replace(DEVNET, difficulty=1, coinbase_maturity=2)
+# Fast profile: fixed difficulty 16 (16 hashes on average), no retargeting, short coinbase maturity.
+# Retargeting has its own simulations and integration tests (tests/consensus/test_difficulty.py).
+TEST = dataclasses.replace(DEVNET, difficulty=16, min_difficulty=1, dynamic_difficulty=False, coinbase_maturity=2)
 START = 1_800_000_000   # after the devnet genesis timestamp
 
 

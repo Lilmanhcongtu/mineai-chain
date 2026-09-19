@@ -101,15 +101,15 @@ def test_deeper_valid_chain_replaces_the_local_chain(tmp_path):
 
 def test_shorter_chain_with_more_cumulative_work_wins(tmp_path):
     rules: dict[str, int] = {}
-    hook = lambda parent: rules.get(parent["hash"], 1)
-    n, alice = new_node(tmp_path, blocks=3)                        # long chain: 3 blocks of difficulty 1 (work 48)
+    hook = lambda parent: rules.get(parent["hash"], 16)
+    n, alice = new_node(tmp_path, blocks=3)                        # long chain: 3 blocks of difficulty 16 (work 48)
     n.expected_difficulty = hook
     y = make_chain(tmp_path, TEST, n.clock, name="y.db")
     y.expected_difficulty = hook
     genesis = n.storage.get_block_by_height(0)["hash"]
-    rules[genesis] = 2                                             # from now on, blocks on genesis need difficulty 2
-    hard = wire(mine(y, Acct()))                                   # ONE block of difficulty 2 (work 256)
-    assert hard["difficulty"] == 2 and n.tip()["height"] == 3
+    rules[genesis] = 256                                           # from now on, blocks on genesis need difficulty 256
+    hard = wire(mine(y, Acct()))                                   # ONE block of difficulty 256 (work 256)
+    assert hard["difficulty"] == 256 and n.tip()["height"] == 3
     result = n.process_block(hard)
     assert result.status == "reorg"
     assert n.tip()["hash"] == hard["hash"] and n.tip()["height"] == 1     # shorter, but heavier

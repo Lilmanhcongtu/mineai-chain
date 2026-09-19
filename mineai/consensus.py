@@ -129,7 +129,7 @@ def header_prefix(params: NetworkParams, height: int, previous_hash: str, merkle
     """Everything in the header except the nonce (miners reuse this)."""
     return (BLOCK_DOMAIN + lp(params.network_id) + u64(height)
             + bytes.fromhex(previous_hash) + bytes.fromhex(merkle)
-            + u64(timestamp) + struct.pack(">I", difficulty))
+            + u64(timestamp) + u64(difficulty))
 
 
 def hash_header(prefix: bytes, nonce: int) -> str:
@@ -142,13 +142,59 @@ def block_hash(params: NetworkParams, block: dict) -> str:
     return hash_header(prefix, block["nonce"])
 
 
+MAX_DIFFICULTY = 2 ** 62
+
+
+def target_for(difficulty: int) -> int:
+    """Largest hash value (as a 256-bit big-endian integer) that satisfies `difficulty`."""
+    return (2 ** 256 - 1) // difficulty
+
+
 def meets_target(hash_hex: str, difficulty: int) -> bool:
-    return hash_hex.startswith("0" * difficulty)
+    return int(hash_hex, 16) <= target_for(difficulty)
 
 
 def block_work(difficulty: int) -> int:
-    """Expected number of hashes for one block at this difficulty (used for chain selection)."""
-    return 16 ** difficulty
+    """Work of one block = its difficulty (expected number of hashes). Genesis has work 0."""
+    return difficulty
+
+
+TS_FILTER = 5          # timestamps are median-filtered over this many blocks before use
+
+
+def _filtered(stamps: list[int], i: int) -> int:
+    """Median of the (up to) TS_FILTER timestamps ending at index i; the upper median for an even count."""
+    segment = stamps[max(0, i - TS_FILTER + 1): i + 1]
+    return sorted(segment)[len(segment) // 2]
+
+
+def next_difficulty(params: NetworkParams, history: list[tuple[int, int]]) -> int:
+    """Difficulty required of the child of the last block in `history` (PROTOCOL.md 5.10).
+
+    `history`: (timestamp, difficulty) of the parent and up to lwma_window + TS_FILTER - 1 of its ancestors,
+    OLDEST first (it starts at genesis when the chain is that short). Integer arithmetic only.
+    The first TS_FILTER blocks of a chain use the initial difficulty (the filter needs full segments)."""
+    count = len(history)
+    window = min(params.lwma_window, count - TS_FILTER)
+    if window < 1:
+        return params.difficulty
+    stamps = [t for t, _ in history]
+    target = params.target_spacing
+    weighted, total = 0, 0
+    prev = _filtered(stamps, count - window - 1)
+    for j in range(1, window + 1):
+        i = count - window - 1 + j
+        stamp = _filtered(stamps, i)
+        effective = stamp if stamp > prev else prev + 1               # strictly increasing timestamps
+        solve = min(6 * target, effective - prev)                     # cap a single solve time at 6 targets
+        prev = effective
+        weighted += j * solve
+        total += history[i][1]
+    raw = (total * (window + 1) * target) // (2 * weighted)
+    parent = history[-1][1]
+    nxt = min(raw, 2 * parent)                                        # at most 2x up per block
+    nxt = max(nxt, parent // 2)                                       # at most 2x down per block
+    return max(1, min(MAX_DIFFICULTY, max(params.min_difficulty, nxt)))
 
 
 def genesis_block(params: NetworkParams) -> dict:
@@ -170,7 +216,7 @@ def check_block_structure(block: object, params: NetworkParams, expected_difficu
     _hash(block["hash"], "hash")
     _int(block["timestamp"], "timestamp")
     _int(block["nonce"], "nonce")
-    difficulty = _int(block["difficulty"], "difficulty", 0, 256)
+    difficulty = _int(block["difficulty"], "difficulty", 1, MAX_DIFFICULTY)
     txs = block["transactions"]
     if not isinstance(txs, list) or not txs:
         raise ValidationError("block must contain a coinbase transaction", "bad_coinbase")

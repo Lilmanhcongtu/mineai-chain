@@ -260,3 +260,34 @@ def test_orphan_block_triggers_a_locator_sync(tmp_path):
             await until(lambda: a.chain.tip()["hash"] == src.chain.tip()["hash"])
             assert len(a.chain.orphans) == 0
     run(scenario())
+
+
+def test_nodes_independently_agree_on_dynamic_difficulty_and_converge(tmp_path):
+    """Three nodes with retargeting on: blocks with varying spacing are re-validated by every node against
+    difficulty it computes itself from its own copy of the chain."""
+    from mineai.config import DEVNET
+    dyn = dataclasses.replace(DEVNET, difficulty=64, min_difficulty=16, coinbase_maturity=2)
+
+    async def scenario():
+        async with Cluster(tmp_path, params=dyn) as c:
+            c.clock.t = DEVNET.genesis_timestamp + 60
+            a = await c.start("a")
+            b = await c.start("b", seeds=[addr(a)])
+            d = await c.start("c", seeds=[addr(b)])
+            await until(lambda: all(len(n.peers) >= 1 for n in (a, b, d)))
+            miner = Acct(dyn)
+            gaps = [60] * 10 + [4] * 12 + [200] * 8                        # on target, then a burst, then a slow patch
+            for height, gap in enumerate(gaps, start=1):
+                c.clock.advance(gap)
+                block = mine(a.chain, miner)
+                a.announce_block(block)
+                await until(lambda h=height: all(n.chain.tip()["height"] == h for n in (b, d)), msg=f"height {height}")
+            assert len(tips(a, b, d)) == 1
+            history = [a.chain.storage.get_block_by_height(h)["difficulty"] for h in range(1, len(gaps) + 1)]
+            assert history[:5] == [64] * 5 and len(set(history)) > 3      # retargeting really happened
+            assert max(history) > 64 and min(history) < max(history)
+            expected = {n.chain.expected_difficulty(n.chain.tip()) for n in (a, b, d)}
+            assert len(expected) == 1                                     # every node computes the same next difficulty
+            for n in (a, b, d):
+                n.chain.verify_integrity()
+    run(scenario())

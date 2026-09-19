@@ -1,4 +1,4 @@
-# MineAI Protocol Specification — v1 (draft, Milestone 4)
+# MineAI Protocol Specification — v1 (draft, Milestone 5)
 
 > **Status:** covers the rules **implemented and tested today** (consensus rules plus the Milestone 3 peer-to-peer protocol). Sections marked
 > **[NOT YET SPECIFIED]** are planned for later milestones and are deliberately empty: nothing in the
@@ -12,7 +12,7 @@
 
 | | devnet | testnet | mainnet |
 |---|---|---|---|
-| `network_id` (ASCII) | `mineai-devnet-v2` | `mineai-testnet-v1` | `mineai-mainnet-v1` |
+| `network_id` (ASCII) | `mineai-devnet-v3` | `mineai-testnet-v1` | `mineai-mainnet-v1` |
 | address prefix | `DMAI` | `TMAI` | `MAI` |
 | default API port | 8080 | 18080 | 28080 |
 | default P2P port | 8081 | 18081 | 28081 |
@@ -121,28 +121,36 @@ duplicated). The root of an empty list is 32 zero bytes. Duplicate transaction i
 
 ```
 header = "MineAI/block/v1\0" || lp(network_id) || u64(height) || previous_hash(32) || merkle_root(32)
-       || u64(timestamp) || u32_be(difficulty) || u64(nonce)
+       || u64(timestamp) || u64(difficulty) || u64(nonce)
 hash   = hex( SHA-256( header ) )
 ```
 
-### 5.5 Proof of work and difficulty
+### 5.5 Proof of work
 
-`difficulty` is the number of leading **hexadecimal zeros** the block hash must have. It is fixed by the
-network profile (devnet: 4) — **dynamic difficulty is Milestone 5**. A block whose `difficulty` differs from the network value is invalid.
-Chain work is defined in section 8.1.
+`difficulty` (D) is a positive integer, `1 ≤ D ≤ 2^62`: the expected number of hash attempts needed to find a block.
+
+```
+target(D) = floor( (2^256 − 1) / D )
+valid PoW  <=>  int_be(block hash) ≤ target(D)          # the 32-byte hash read as a big-endian integer
+```
+
+A block is invalid unless its declared `difficulty` equals the value required by section 5.10 for its parent.
+Difficulty is therefore a function of the block's own ancestry (never of the local tip), so competing branches are judged correctly.
+(V0.1–V0.2 used "number of leading hexadecimal zeros"; that representation moved in 16x steps, too coarse for retargeting. `difficulty`
+changed meaning together with the header layout, hence the new network id `mineai-devnet-v3`.)
 
 ### 5.6 Genesis
 
-Height 0, `previous_hash = merkle_root = 0×64`, `difficulty = 0`, `nonce = 0`, no transactions,
+Height 0, `previous_hash = merkle_root = 0×64`, `difficulty = 0` (no proof of work), `nonce = 0`, no transactions,
 `timestamp = genesis_timestamp` (2026-01-01T00:00:00Z for devnet/testnet). No PoW check, no premine, no coinbase.
 The devnet genesis hash is pinned in `config.py` and by a test:
-`c35e979832d87b29f354fc92ddf932d58f50bee71e3048c9b28079f21d7b612f`.
+`b163bf62f484bcaf90db3f821f8e70becb702444d2f912df7680e62d3d885666`.
 
 ### 5.7 Timestamps
 
 For a block at height `h ≥ 1`:
 * `timestamp > median(timestamps of the last 11 blocks)` (fewer near genesis). It may be older than the previous block.
-* `timestamp ≤ local_clock + 7200 s`. This rule depends on the validator's clock and is the only non-deterministic check; a block rejected for being too far in the future may become valid later.
+* `timestamp ≤ local_clock + 300 s`. This rule depends on the validator's clock and is the only non-deterministic check; a block rejected for being too far in the future may become valid later.
 
 ### 5.8 Size limits
 
@@ -154,6 +162,40 @@ For a block at height `h ≥ 1`:
 Structure and types strict → sizes → every transaction valid (§4) and unique → merkle root → difficulty →
 hash and PoW → extends the current tip (`height = tip+1`, `previous_hash = tip.hash`) → timestamp rules →
 state rules for each transaction in order → coinbase rule → commit atomically.
+
+### 5.10 Difficulty adjustment (Milestone 5)
+
+Goal: one block every `T = 60` seconds on average, following hashrate changes within a few dozen blocks,
+without oscillating and without letting timestamp games buy an advantage. The algorithm is a linearly-weighted
+moving average (LWMA) of recent solve times over **median-filtered timestamps**, with a solve-time cap and a per-block
+change limit. It uses **integers only** and depends only on the parent's ancestry.
+
+Parameters (network profile): `T = 60`, window `N = 60`, timestamp filter `F = 5`, initial difficulty `D0`,
+`min_difficulty`, maximum `2^62`. Profiles with `dynamic_difficulty = false` (test profiles only) always use `D0`.
+
+Let `P` be the parent. Let `hist` be `P` and up to `N + F − 1` of its ancestors, oldest first, entries `hist[0..c−1]`
+(the list starts at the genesis block when the chain is that short), each with its timestamp `t` and declared difficulty `D`.
+
+1. Let `w = min(N, c − F)`. If `w < 1` (heights 0 to 4: fewer than `F` blocks of history) the required difficulty is `D0`.
+2. Filtered timestamps: `f(i) = ` the median of `t[i−F+1 … i]` (the upper median when the count is even; always `F` values here).
+3. `prev = f(c − w − 1)`. For `j = 1 … w` with `i = c − w − 1 + j`:
+   * `eff = f(i)` if `f(i) > prev`, otherwise `prev + 1` (strictly increasing timestamps);
+   * `st = min(6·T, eff − prev)` (a solve time is capped at six targets);
+   * `prev = eff`; `L += j · st`; `S += D[i]` (the difficulty declared by that block).
+4. `D_raw = floor( S · (w + 1) · T / (2 · L) )`. With constant hashrate this equals the average difficulty (exactly, in integers); if blocks are slower than `T` it falls, if faster it rises.
+5. Limit the per-block change with `D_P` = the parent's difficulty: `D = min(D_raw, 2·D_P)` and `D = max(D, floor(D_P / 2))`.
+6. Clamp: `D = max(D, min_difficulty)`, `D = min(D, 2^62)`, and never below 1.
+
+Why these choices (each is exercised by `tests/consensus/test_difficulty.py`, using seeded simulations of a memoryless
+proof-of-work search; the figures below are from those simulations and are not guarantees for a real network):
+
+* *Steady state:* at constant hashrate the mean block time is within ~2% of 60 s.
+* *Hashrate x10:* blocks come roughly every 11 s for about 60 blocks, the difficulty converges to ~10x, then 60 s is restored. *Hashrate /10:* blocks are slow (~4.5 min) while it adapts (about 30 blocks), then 60 s is restored. There is no emergency adjustment, so a large collapse costs real time.
+* *Long network pause:* a solve time is capped at `6T`, and the median filter hides a single late block until later blocks confirm it, so a one-day pause lowers the difficulty by only ~10-15% and the following hour holds ~60 blocks. (An absolute-schedule algorithm such as ASERT was rejected: after a one-day pause it mined ~400 blocks in the first hour.)
+* *Oscillation:* a hashrate alternating between 3x and 1/3x every 30 blocks moves the difficulty by about 3.6x, less than the 9x input swing, and the variance does not grow over time.
+* *Timestamp manipulation:* a block may be stamped at most `max_future_seconds = 300` ahead of the validator's clock and must exceed the median of the last 11 blocks. The median filter removes isolated outliers, so only sustained manipulation matters. Attackers (30% of hashrate) stamping forward, backdating to the minimum, or alternating keep the real block time within ~5% of 60 s; a constant offset has no lasting effect (only differences count). Even at 45% of the hashrate, the worst strategy measured (backdating) slows blocks by about 1.5x. In no strategy tested does the average difficulty fall below the honest level, so manipulation cannot make blocks cheaper. Its only effect is to slow the chain down, at the manipulator's own cost.
+* *Cost of the tighter clock limit:* a node whose clock is more than 5 minutes fast will find its blocks rejected until the clock is fixed.
+* *Startup:* the first 5 blocks use `D0`; a `D0` far from the real hashrate is corrected at the maximum rate of 2x per block.
 
 ## 6. Coinbase maturity
 
@@ -172,7 +214,7 @@ height `h`, `immature(addr, h)` = sum of coinbase amounts to `addr` in blocks wi
 
 ### 8.1 Chain work
 
-`work(block) = 16^difficulty` for blocks at height ≥ 1, and `work(genesis) = 0`.
+`work(block) = difficulty` for blocks at height ≥ 1 and `work(genesis) = 0`.
 `total_work(block) = total_work(parent) + work(block)`. Work values are unbounded integers
 (stored as decimal strings; compared as integers).
 
@@ -181,8 +223,7 @@ height `h`, `immature(addr, h)` = sum of coinbase amounts to `addr` in blocks wi
 A node considers every block it has received whose ancestry it knows. The **best chain** is the valid chain
 with the greatest `total_work` — *not* the greatest height, so a shorter chain with more work wins.
 **Ties:** the chain whose tip was received first stays best (no switching on equal work).
-The difficulty a block must declare is a function of its ancestry, `expected_difficulty(parent)`
-(currently constant per network; Milestone 5 makes it dynamic). It is evaluated against the block's own parent chain, never the local tip.
+The difficulty a block must declare is `expected_difficulty(parent)` (section 5.10), evaluated against the block's own parent chain, never the local tip.
 
 ### 8.3 Block classes on receipt
 

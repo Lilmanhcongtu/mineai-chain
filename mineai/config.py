@@ -31,7 +31,7 @@ class NetworkParams:
     max_supply: int             # atomic units
     min_fee: int                # atomic units
     default_fee: int            # atomic units
-    difficulty: int             # leading hex zeros required in the block hash (fixed until Milestone 5)
+    difficulty: int             # initial difficulty D0 (expected hashes per block); constant if not dynamic
     genesis_timestamp: int
     genesis_hash: str
     coinbase_maturity: int      # blocks before a coinbase output is spendable
@@ -39,7 +39,12 @@ class NetworkParams:
     max_tx_bytes: int = 1024
     max_block_bytes: int = 512 * 1024
     mtp_window: int = 11                # median-time-past window
-    max_future_seconds: int = 2 * 60 * 60
+    max_future_seconds: int = 5 * 60
+    # Difficulty adjustment (consensus, PROTOCOL.md 5.10):
+    dynamic_difficulty: bool = True
+    target_spacing: int = 60
+    lwma_window: int = 60
+    min_difficulty: int = 256
     # Mempool policy (NOT consensus):
     mempool_max_txs: int = 5000
     mempool_max_per_sender: int = 25
@@ -58,8 +63,11 @@ class NetworkParams:
             raise ValueError("block_reward must be in (0, max_supply]")
         if not (0 < self.min_fee <= self.default_fee <= self.max_supply):
             raise ValueError("require 0 < min_fee <= default_fee <= max_supply")
-        if not (0 <= self.difficulty <= 64) or self.coinbase_maturity < 0 or self.mtp_window < 1:
+        if not (1 <= self.min_difficulty <= self.difficulty <= 2 ** 62) or self.coinbase_maturity < 0 \
+                or self.mtp_window < 1:
             raise ValueError("invalid difficulty / maturity / mtp_window")
+        if self.target_spacing < 1 or self.lwma_window < 2 or self.max_future_seconds < 0:
+            raise ValueError("invalid target_spacing / lwma_window / max_future_seconds")
         if not self.network_id.isascii() or not self.address_prefix.isalpha() or not self.address_prefix.isupper():
             raise ValueError("network_id must be ASCII and address_prefix upper-case letters")
 
@@ -70,7 +78,7 @@ def _mai(x: int) -> int:
 
 DEVNET = NetworkParams(
     name="devnet",
-    network_id="mineai-devnet-v2",
+    network_id="mineai-devnet-v3",
     address_prefix="DMAI",
     label="DEVNET",
     default_port=8080,
@@ -79,9 +87,9 @@ DEVNET = NetworkParams(
     max_supply=_mai(100_000_000),
     min_fee=1_000,                 # 0.001 MAI
     default_fee=10_000,            # 0.01 MAI
-    difficulty=4,
+    difficulty=65_536,
     genesis_timestamp=1_767_225_600,   # 2026-01-01T00:00:00Z
-    genesis_hash="c35e979832d87b29f354fc92ddf932d58f50bee71e3048c9b28079f21d7b612f",  # pinned; guarded by tests
+    genesis_hash="b163bf62f484bcaf90db3f821f8e70becb702444d2f912df7680e62d3d885666",  # pinned; guarded by tests
     coinbase_maturity=3,
 )
 
@@ -96,7 +104,7 @@ TESTNET = NetworkParams(
     max_supply=_mai(100_000_000),
     min_fee=1_000,
     default_fee=10_000,
-    difficulty=4,
+    difficulty=65_536,
     genesis_timestamp=1_767_225_600,
     genesis_hash="",  # to be pinned when the public testnet genesis is created (Milestone 8)
     coinbase_maturity=10,
@@ -113,7 +121,7 @@ MAINNET = NetworkParams(
     max_supply=_mai(100_000_000),
     min_fee=1_000,
     default_fee=10_000,
-    difficulty=4,
+    difficulty=65_536,
     genesis_timestamp=0,
     genesis_hash="",
     coinbase_maturity=100,

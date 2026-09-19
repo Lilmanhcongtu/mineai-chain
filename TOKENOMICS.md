@@ -10,7 +10,7 @@
 | Maximum supply | 100 000 000 MAI (fixed, enforced by consensus) |
 | Premine / founder allocation | **0** |
 | Block subsidy | 25 MAI |
-| Target block time | ~60 s (dynamic difficulty arrives in Milestone 5; devnet difficulty is currently fixed) |
+| Target block time | ~60 s, enforced by a per-block difficulty adjustment (PROTOCOL.md 5.10) |
 | Minimum fee | 0.001 MAI |
 | Default wallet fee | 0.01 MAI |
 | Coinbase maturity | devnet 3, testnet 10, mainnet 100 (planned) blocks |

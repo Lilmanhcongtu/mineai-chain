@@ -2,15 +2,17 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import multiprocessing as mp
 import os
 import queue
+import struct
 import time
 
 import httpx
 
 from . import config
-from .consensus import hash_header, header_prefix, meets_target
+from .consensus import header_prefix, target_for
 from .crypto import validate_address
 from .util import atomic_to_mai
 
@@ -19,13 +21,15 @@ COUNT_EVERY = 2048
 
 
 def mine_worker(prefix: bytes, difficulty: int, worker_id: int, workers: int, stop, result, counter):
+    target = target_for(difficulty)
+    sha256, pack, from_bytes = hashlib.sha256, struct.Struct(">Q").pack, int.from_bytes
     nonce, hashes = worker_id, 0
     while not stop.is_set():
-        digest = hash_header(prefix, nonce)
+        digest = sha256(prefix + pack(nonce)).digest()
         hashes += 1
-        if meets_target(digest, difficulty):
+        if from_bytes(digest, "big") <= target:
             counter.value += hashes
-            result.put((nonce, digest))
+            result.put((nonce, digest.hex()))
             stop.set()
             return
         if hashes % COUNT_EVERY == 0:

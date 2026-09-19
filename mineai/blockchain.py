@@ -93,9 +93,17 @@ class Blockchain:
         self.storage.close()
 
     def expected_difficulty(self, parent: dict) -> int:
-        """Difficulty a child of `parent` must declare. A function of the parent's ancestry only.
-        Constant for now; dynamic difficulty (Milestone 5) replaces this."""
-        return self.params.difficulty
+        """Difficulty a child of `parent` must declare (PROTOCOL.md 5.10). A function of the parent's
+        ancestry only, so competing branches are each judged by their own history."""
+        p = self.params
+        if not p.dynamic_difficulty or parent["height"] == 0:
+            return p.difficulty
+        need = p.lwma_window + C.TS_FILTER                              # window + block before it + filter segment
+        headers = self.storage.header_chain(parent["hash"], need)
+        headers.reverse()                                             # oldest first
+        if len(headers) < min(parent["height"] + 1, need):
+            raise ChainError("cannot evaluate difficulty: ancestry is incomplete")
+        return C.next_difficulty(p, [(ts, d) for _, ts, d in headers])
 
     # ------------------------------------------------------------------ startup checks
     def _open(self) -> None:

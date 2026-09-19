@@ -33,7 +33,7 @@ like `password`, `private_key`, `secret`, `mnemonic` or `seed`.
 ## Known limitations (be honest about these)
 
 1. **Fork handling is new and only tested on localhost.** Cumulative-work selection, reorganizations (atomic, depth-limited to 100 blocks) and side-block storage have had no external review. The depth limit protects against deep-fork attacks but can split the network permanently if a partition outlasts it. Orphan blocks are held in memory (up to 100 blocks, so up to ~50 MB in the worst case) and side blocks on disk (up to 2000).
-2. **Fixed difficulty** (SHA-256, leading hex zeros); no dynamic adjustment and therefore no manipulation-resistance analysis yet. (Milestone 5.) The timestamp rules (median-time-past, +2 h cap) are in place as a prerequisite.
+2. **Difficulty adjustment is simulated, not proven.** The 60 s target, hashrate steps, pauses and timestamp attacks were tested with seeded simulations and a real 3-process run, never on a real network with real, adversarial hashrate. A near-majority attacker can slow blocks by ~1.5x by backdating timestamps; a >5-minute fast clock gets a node's blocks rejected; a 90% hashrate collapse takes ~30 slow blocks to absorb (no emergency adjustment). The algorithm has had no external review.
 3. **Wallet:** no lock/timeout, no backup/restore tooling beyond copying the file, no recovery phrase, no hardware-wallet support. Password strength is only length-checked (≥ 10 chars). Unlocked keys live in process memory while signing.
 4. **Address format and encodings are project-specific and unreviewed** by cryptographers.
 5. **Mempool:** no replace-by-fee, no eviction by fee rate (new transactions are refused when full).

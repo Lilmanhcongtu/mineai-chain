@@ -227,8 +227,11 @@ def test_wrong_hash_rejected(tmp_path):
 
 def test_incorrect_difficulty_rejected(tmp_path):
     chain, alice = funded(tmp_path)
-    reject(chain, build(chain, alice, lambda b: b.update(difficulty=2)), "bad_difficulty")
-    reject(chain, build(chain, alice, lambda b: b.update(difficulty=0)), "bad_difficulty")
+    reject(chain, build(chain, alice, lambda b: b.update(difficulty=2)), "bad_difficulty")      # easier than required
+    reject(chain, build(chain, alice, lambda b: b.update(difficulty=17)), "bad_difficulty")     # harder than required
+    with pytest.raises(ValidationError) as exc:                                                    # 0 is not a valid difficulty at all
+        C.check_block_structure({**build(chain, alice), "difficulty": 0}, chain.params)
+    assert exc.value.code == "out_of_range"
 
 
 @pytest.mark.parametrize("subsidy_delta", [1, 1_000_000, -1])
