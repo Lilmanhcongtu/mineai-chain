@@ -524,3 +524,53 @@ def test_known_transactions_are_not_reprocessed_or_rebroadcast(tmp_path):
             assert a.chain.storage.mempool_count() == 1
             assert next(p for p in a.peers.values() if p.node_id == sender.node_id).score == 0   # and not punished
     run(scenario())
+
+
+# ====================================================================== metrics reflect what the network layer does
+def test_peer_activity_and_abuse_are_visible_in_the_metrics(tmp_path):
+    async def scenario():
+        async with Cluster(tmp_path) as c:
+            a = await c.start("a")
+            b = await c.start("b", seeds=[addr(a)])
+            await until(lambda: len(a.peers) == 1 and len(b.peers) == 1)
+            ma, mb = a.chain.metrics, b.chain.metrics
+            assert ma.get("p2p_peers_connected", direction="inbound") == 1
+            assert mb.get("p2p_peers_connected", direction="outbound") == 1
+            alice = Acct()
+            c.mine(a, alice)
+            await until(lambda: b.chain.tip()["height"] == 1)
+            assert mb.get("p2p_messages_received", type="inv") >= 1 and mb.get("p2p_messages_received", type="block") >= 1
+            assert mb.get("p2p_bytes_received") > 0
+
+            ident = os.urandom(16).hex()
+            for _ in range(2):                                              # two strikes from the same identity -> ban
+                raw = await Raw(a, ident).connect()
+                await raw.send_raw(frame(b"{not json"))
+                assert await raw.closed()
+            assert ma.get("p2p_protocol_errors", reason="malformed") == 2
+            assert ma.get("p2p_penalty_points") >= 100 and ma.get("p2p_peers_banned") == 1
+            assert ma.get("p2p_peers_disconnected") >= 2
+
+            for i in range(25):                                             # varied hostile garbage: series count stays bounded
+                junk = Raw(a, os.urandom(16).hex())
+                await junk.connect(handshake=False)
+                await junk.send_raw(frame(os.urandom(5 + i)))
+                await junk.closed(timeout=1.0)
+            series = ma.snapshot().get("p2p_protocol_errors", {})
+            assert set(series) <= {f"reason={k}" for k in ("malformed", "bad_frame", "unknown_type", "no_hello", "version",
+                                                            "network", "genesis", "self", "banned", "duplicate", "table_full", "other")}
+    run(scenario())
+
+
+def test_sync_and_reorg_counters_over_the_network(tmp_path):
+    async def scenario():
+        async with Cluster(tmp_path) as c:
+            a = await c.start("a")
+            alice = Acct()
+            for _ in range(5):
+                c.mine(a, alice, announce=False)
+            b = await c.start("b", seeds=[addr(a)])
+            await until(lambda: b.chain.tip()["height"] == 5)
+            assert b.chain.metrics.get("p2p_syncs_started") >= 1
+            assert b.chain.metrics.get("blocks_received", status="extended") == 5
+    run(scenario())

@@ -257,3 +257,58 @@ def test_status_without_p2p_reports_zero_peers(env):
     st = client.get("/api/status").json()
     assert st["peer_count"] == 0 and st["p2p_enabled"] is False
     assert client.get("/api/peers").json() == {"count": 0, "peers": []}
+
+
+# ====================================================================== regression: full-size blocks must be submittable
+def _full_mempool_chain(tmp_path, senders=8, per_sender=20):
+    from tests.helpers import make_chain, mine_n
+    chain = make_chain(tmp_path)
+    accounts = [Acct() for _ in range(senders)]
+    for who in accounts:
+        mine_n(chain, who, 3)                                        # every sender owns matured coins
+    sink = Acct()
+    for who in accounts:
+        for nonce in range(1, per_sender + 1):
+            chain.submit_transaction(who.tx(sink, "0.01", nonce=nonce, timestamp=chain.now()))
+    return chain, accounts[0]
+
+
+def test_a_block_larger_than_the_default_body_limit_can_be_submitted(tmp_path):
+    """Found by the private testnet: >~150 pending transactions made blocks the API refused (413), so miners stopped
+    and the mempool could never drain."""
+    import json
+    from tests.helpers import solve
+    chain, miner = _full_mempool_chain(tmp_path)
+    assert chain.storage.mempool_count() == 160
+    client = TestClient(create_app(chain, local_hosts=LOCAL, rate_limit_per_minute=100_000), raise_server_exceptions=False)
+    template = client.get("/api/v1/mining/template", params={"address": miner.address}).json()
+    block = solve(chain.params, {k: template[k] for k in ("height", "previous_hash", "merkle_root", "timestamp",
+                                                           "difficulty", "nonce", "transactions")})
+    size = len(json.dumps(block))
+    assert size > 65536, "the test must exercise a block bigger than the default body limit"
+    assert len(block["transactions"]) == 161 and size < chain.params.max_block_bytes
+    r = client.post("/api/v1/mining/submit", json=block)
+    assert r.status_code == 200, r.text
+    assert chain.storage.mempool_count() == 0                          # the whole backlog was mined in one block
+    chain.verify_integrity()
+
+
+def test_only_block_submission_gets_the_larger_limit(tmp_path):
+    chain, _ = funded(tmp_path)
+    client = TestClient(create_app(chain, local_hosts=LOCAL, rate_limit_per_minute=100_000), raise_server_exceptions=False)
+    filler = b'{"x":"' + b"a" * 70_000 + b'"}'                            # 70 KB: above 64 KiB, well below a block
+    headers = {"content-type": "application/json"}
+    assert client.post("/api/v1/transactions", content=filler, headers=headers).status_code == 413
+    assert client.post("/api/transactions", content=filler, headers=headers).status_code == 413
+    assert client.post("/api/v1/mining/submit", content=filler, headers=headers).status_code in (400, 422)   # parsed, then refused
+    huge = b'{"x":"' + b"a" * (2 * chain.params.max_block_bytes + 10) + b'"}'
+    assert client.post("/api/v1/mining/submit", content=huge, headers=headers).status_code == 413       # still bounded
+    assert client.get("/api/v1/health").status_code == 200
+
+
+def test_a_custom_body_limit_still_governs_everything_else_but_blocks_stay_submittable(tmp_path):
+    chain, _ = funded(tmp_path)
+    tiny = TestClient(create_app(chain, max_body_bytes=1024, local_hosts=LOCAL, rate_limit_per_minute=100_000),
+                      raise_server_exceptions=False)
+    assert tiny.post("/api/v1/transactions", content=b"x" * 2000, headers={"content-type": "application/json"}).status_code == 413
+    assert tiny.post("/api/v1/mining/submit", content=b"{}", headers={"content-type": "application/json"}).status_code in (400, 422)

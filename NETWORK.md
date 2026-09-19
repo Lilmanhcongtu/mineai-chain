@@ -7,6 +7,7 @@ MineAI keeps three completely separate network profiles. Selecting one is done w
 |---|---|---|
 | `devnet` | Local development on one or more machines/processes | Working: multi-node P2P with fork choice and reorganizations |
 | `testnet` | Future public test network | Profile defined; **genesis not created, no nodes exist** |
+| `privnet` | Private multi-node testing (Milestone 7): 5 s blocks, low difficulty | Working; used by `scripts\private_testnet.py`. **Never for public use.** |
 | `mainnet` | — | **Disabled in code.** Not launched, not planned for launch without explicit authorization |
 
 Separation guarantees (all covered by tests):
@@ -25,7 +26,8 @@ Separation guarantees (all covered by tests):
 * **Dynamic difficulty (Milestone 5):** the difficulty is retargeted every block towards a 60-second average (LWMA over median-filtered timestamps, PROTOCOL.md 5.10). Difficulty is a numeric target, no longer "leading hex zeros". The first 5 blocks use the initial difficulty (65,536 on devnet); a much faster miner will see it double per block until it reaches equilibrium. Blocks may be stamped at most 5 minutes ahead of a node's clock, so keep clocks synchronized.
 * Nothing is hosted publicly: there are no seed nodes and no public testnet.
 * **Milestone 6:** wallet, miner, explorer and a Windows package (see README). The API is versioned under `/api/v1`.
-* Planned next: private testnet (7), public testnet candidate (8).
+* **Milestone 7:** a private five-node test program (`scripts\private_testnet.py`, results in `docs/reports/`), read-only monitoring (`/metrics` Prometheus text and `/api/v1/metrics` JSON), the offline `mineai check` database verifier, and an operator runbook: see `docs/PRIVATE_TESTNET.md`.
+* Planned next: public testnet candidate (8).
 
 ## Running a node
 

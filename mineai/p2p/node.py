@@ -22,6 +22,7 @@ from .. import __version__
 from ..blockchain import Blockchain
 from ..consensus import ValidationError
 from ..log import event
+from ..metrics import reject_bucket
 from . import protocol as P
 
 log = logging.getLogger("mineai.p2p")
@@ -48,13 +49,19 @@ class P2PConfig:
     connect_timeout: float = 5.0
     max_message_bytes: int = 4 * 1024 * 1024
     max_handshake_bytes: int = 8 * 1024
-    rate_per_sec: float = 50.0
-    rate_burst: float = 100.0
+    rate_per_sec: float = 200.0
+    rate_burst: float = 1000.0          # an honest burst (e.g. relaying a batch of transactions) must never be punished
+    rate_violation_points: int = 5
+    penalty_decay_seconds: float = 5.0  # one misbehavior point is forgotten every this many seconds
+    inv_flush_delay: float = 0.05       # transaction announcements are batched for this long
     ban_threshold: int = 100
     ban_seconds: float = 600.0
     max_failures: int = 10
     max_known_peers: int = 1000
     seen_cache: int = 20_000
+    future_tx_max: int = 100            # transactions held because an earlier nonce of the same sender has not arrived
+    future_tx_per_sender: int = 10
+    future_tx_ttl: float = 300.0
     version_range: tuple[int, int] = (P.SUPPORTED_MIN, P.SUPPORTED_MAX)
     user_agent: str = f"mineai/{__version__}"
 
@@ -93,6 +100,8 @@ class Peer:
         self.pending: dict[str, asyncio.Future] = {}
         self.known_tx, self.known_block = LRU(5000), LRU(5000)
         self.send_lock = asyncio.Lock()
+        self.inv_queue: list[str] = []
+        self.inv_flush_scheduled = False
         self.syncing = False
         self.closed = False
         self.tasks: list[asyncio.Task] = []
@@ -165,8 +174,9 @@ class P2PNode:
         self.peers: dict[str, Peer] = {}                 # node_id -> peer (handshaken)
         self.connecting: set[str] = set()
         self.bans: dict[str, float] = {}                 # key (node_id or ip) -> monotonic expiry
-        self.history: dict[str, int] = {}                # key -> accumulated misbehavior (survives reconnects)
+        self.history: dict[str, tuple[float, float]] = {}   # key -> (misbehavior points, last update); survives reconnects, decays
         self._dials: set[asyncio.Task] = set()
+        self.future_txs: "OrderedDict[str, tuple[float, dict]]" = OrderedDict()   # txid -> (parked at, tx)
         self.inflight: dict[tuple[str, str], float] = {}   # (kind, hash) -> when we asked; suppresses duplicate requests
         self.seen_tx, self.seen_block = LRU(self.cfg.seen_cache), LRU(self.cfg.seen_cache)
         self.server: asyncio.AbstractServer | None = None
@@ -234,22 +244,31 @@ class P2PNode:
             del self.bans[k]
         return False
 
+    def score_of(self, key: str) -> float:
+        """Current misbehavior points of an identity, after decay (one point forgotten per penalty_decay_seconds)."""
+        points, stamp = self.history.get(key, (0.0, time.monotonic()))
+        return max(0.0, points - (time.monotonic() - stamp) / self.cfg.penalty_decay_seconds)
+
     async def penalize(self, peer: Peer, points: int, reason: str) -> None:
         keys = self._ban_keys(peer)
-        # The score follows the peer's identity, not the connection: reconnecting must not reset it.
-        total = max([self.history.get(k, 0) for k in keys], default=peer.score) + points
+        # The score follows the peer's identity, not the connection (reconnecting must not reset it), but it decays,
+        # so a burst of honest-but-noisy behaviour can never add up to a ban over time.
+        now = time.monotonic()
+        total = max([self.score_of(k) for k in keys], default=float(peer.score)) + points
         for k in keys:
-            self.history[k] = total
+            self.history[k] = (total, now)
         if len(self.history) > 10_000:
             self.history.pop(next(iter(self.history)))
-        peer.score = total
+        peer.score = int(round(total))
+        self.chain.metrics.inc("p2p_penalty_points", points)
         event(log, logging.INFO, "peer_penalized", peer=peer.node_id or peer.ip, points=points,
               score=peer.score, reason=reason)
-        if peer.score >= self.cfg.ban_threshold:
+        if round(total) >= self.cfg.ban_threshold:
             expiry = time.monotonic() + self.cfg.ban_seconds
             for key in keys:
                 self.bans[key] = expiry
                 self.history.pop(key, None)                  # a served ban wipes the slate
+            self.chain.metrics.inc("p2p_peers_banned")
             event(log, logging.WARNING, "peer_banned", peer=peer.node_id or peer.ip, reason=reason)
             await peer.close()
 
@@ -361,6 +380,7 @@ class P2PNode:
             self.peers[peer.node_id] = peer
             if peer.advertised:
                 self._remember(peer.advertised)
+            self.chain.metrics.inc("p2p_peers_connected", direction="inbound" if peer.inbound else "outbound")
             event(log, logging.INFO, "peer_connected", peer=peer.node_id, inbound=peer.inbound,
                   height=peer.height, version=peer.version)
             peer.tasks.append(asyncio.create_task(self._ping_loop(peer)))
@@ -369,6 +389,7 @@ class P2PNode:
                 peer.tasks.append(asyncio.create_task(self._sync_from(peer)))
             await self._read_loop(peer)
         except P.ProtocolError as exc:
+            self.chain.metrics.inc("p2p_protocol_errors", reason=reject_bucket(exc.reason))
             event(log, logging.INFO, "peer_rejected", peer=peer.node_id or peer.ip, reason=exc.reason)
             if exc.penalty:
                 await self.penalize(peer, exc.penalty, exc.reason)
@@ -383,6 +404,7 @@ class P2PNode:
                 t.cancel()
             if peer.node_id and self.peers.get(peer.node_id) is peer:
                 del self.peers[peer.node_id]
+                self.chain.metrics.inc("p2p_peers_disconnected")
                 event(log, logging.INFO, "peer_disconnected", peer=peer.node_id)
             await peer.close()
 
@@ -398,10 +420,12 @@ class P2PNode:
             body = await asyncio.wait_for(P.read_frame(peer.reader, cfg.max_message_bytes), cfg.idle_timeout)
             peer.last_message = time.monotonic()
             if not peer.take_token():                       # flooding: drop the message, add to score
-                await self.penalize(peer, 10, "rate limit exceeded")
+                await self.penalize(peer, self.cfg.rate_violation_points, "rate limit exceeded")
                 continue
             try:
                 mtype, data, _ = P.decode(body, peer.version)
+                self.chain.metrics.inc("p2p_messages_received", type=mtype)
+                self.chain.metrics.inc("p2p_bytes_received", len(body))
                 if mtype == "hello":
                     raise P.ProtocolError("unexpected hello", penalty=50)
                 await self._dispatch(peer, mtype, data)
@@ -465,7 +489,8 @@ class P2PNode:
             await peer.send("get_data", {"kind": d["kind"], "hashes": wanted})
 
     async def _on_get_data(self, peer: Peer, d: dict) -> None:
-        for h in d["hashes"][:P.MAX_GET_DATA_ITEMS]:
+        limit = P.MAX_INV if d["kind"] == "tx" else P.MAX_GET_DATA_ITEMS      # transactions are tiny; blocks are not
+        for h in d["hashes"][:limit]:
             if d["kind"] == "tx":
                 tx = self.chain.storage.mempool_get(h)
                 if tx:
@@ -487,10 +512,16 @@ class P2PNode:
         except ValidationError as exc:
             if txid and exc.code in BENIGN_TX_CODES:
                 self.seen_tx.add(txid)
-            await self.penalize(peer, 1 if exc.code in BENIGN_TX_CODES else 20, f"tx rejected: {exc.code}")
+            if exc.code == "bad_nonce" and self._park_future_tx(tx):
+                return                                       # an earlier nonce is still on its way: hold it, no penalty
+            if exc.code in BENIGN_TX_CODES:                  # honest races (already mined, duplicate, unfunded): not misbehavior
+                self.chain.metrics.inc("p2p_tx_rejected_benign", code=exc.code)
+                return
+            await self.penalize(peer, 20, f"tx rejected: {exc.code}")
             return
         self.seen_tx.add(tx["txid"])
         await self._broadcast("tx", tx["txid"], exclude=peer)
+        await self._release_future_txs(exclude=peer)
 
     async def _on_block(self, peer: Peer, block: dict) -> None:
         bh = block.get("hash") if isinstance(block.get("hash"), str) else None
@@ -529,12 +560,54 @@ class P2PNode:
         if tip != before:                                    # extension or reorganization
             self.seen_block.add(tip)
             await self._broadcast("block", tip, exclude=exclude)
+            await self._release_future_txs(exclude=exclude)
+
+    # ------------------------------------------------------------------ future-nonce transactions
+    def _park_future_tx(self, tx: dict) -> bool:
+        """Hold a valid transaction whose nonce is ahead of the sender's next nonce (its predecessor has not arrived
+        yet: relay can reorder). Bounded globally and per sender; returns False if it is not a future nonce."""
+        try:
+            expected = self.chain.account(tx["sender"])["next_nonce"]
+        except ValidationError:
+            return False
+        if tx["nonce"] <= expected:
+            return False                                     # a replayed or conflicting nonce, not a future one
+        now = time.monotonic()
+        for k in [k for k, (t, _) in self.future_txs.items() if now - t > self.cfg.future_tx_ttl]:
+            del self.future_txs[k]
+        if sum(1 for _, t in self.future_txs.values() if t["sender"] == tx["sender"]) >= self.cfg.future_tx_per_sender:
+            return False
+        self.future_txs[tx["txid"]] = (now, tx)
+        while len(self.future_txs) > self.cfg.future_tx_max:
+            self.future_txs.popitem(last=False)
+        self.chain.metrics.inc("p2p_future_txs_parked")
+        return True
+
+    async def _release_future_txs(self, exclude: Peer | None = None) -> None:
+        """Retry parked transactions in nonce order until nothing more can be admitted."""
+        progressed = True
+        while progressed and self.future_txs:
+            progressed = False
+            for txid, (_, tx) in sorted(self.future_txs.items(), key=lambda kv: (kv[1][1]["sender"], kv[1][1]["nonce"])):
+                try:
+                    self.chain.submit_transaction(tx)
+                except ValidationError as exc:
+                    if exc.code == "bad_nonce" and self.chain.account(tx["sender"])["next_nonce"] < tx["nonce"]:
+                        continue                             # still waiting for its predecessor
+                    self.future_txs.pop(txid, None)          # no longer admissible (mined, conflicting, unfunded...)
+                    continue
+                self.future_txs.pop(txid, None)
+                self.seen_tx.add(txid)
+                self.chain.metrics.inc("p2p_future_txs_released")
+                await self._broadcast("tx", txid, exclude=exclude)
+                progressed = True
 
     # ------------------------------------------------------------------ sync
     async def _sync_from(self, peer: Peer) -> None:
         if peer.syncing or peer.closed:
             return
         peer.syncing = True
+        self.chain.metrics.inc("p2p_syncs_started")
         try:
             while not peer.closed and not self.stopped:
                 try:
@@ -573,13 +646,27 @@ class P2PNode:
             if h in known:
                 continue
             known.add(h)
-            await peer.send("inv", {"kind": kind, "hashes": [h]})
+            if kind == "block":                              # blocks are announced at once
+                await peer.send("inv", {"kind": "block", "hashes": [h]})
+                continue
+            peer.inv_queue.append(h)                         # transactions are batched to cut the message rate
+            if not peer.inv_flush_scheduled:
+                peer.inv_flush_scheduled = True
+                asyncio.get_running_loop().call_later(
+                    self.cfg.inv_flush_delay, lambda p=peer: p.tasks.append(asyncio.create_task(self._flush_inv(p))))
+
+    async def _flush_inv(self, peer: Peer) -> None:
+        peer.inv_flush_scheduled = False
+        hashes, peer.inv_queue = peer.inv_queue, []
+        for i in range(0, len(hashes), P.MAX_INV):
+            await peer.send("inv", {"kind": "tx", "hashes": hashes[i:i + P.MAX_INV]})
 
     def announce_tx(self, tx: dict) -> None:
         """Thread-safe: called by the API layer after it accepted a transaction."""
         if self.loop and not self.stopped:
             self.seen_tx_add_threadsafe(tx["txid"])
             asyncio.run_coroutine_threadsafe(self._broadcast("tx", tx["txid"]), self.loop)
+            asyncio.run_coroutine_threadsafe(self._release_future_txs(), self.loop)
 
     def announce_block(self, block: dict) -> None:
         if self.loop and not self.stopped:

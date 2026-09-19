@@ -6,7 +6,7 @@ CPU SHA-256 proof of work, Ed25519 wallets, REST API and a local explorer.
 > **Not production software.** No independent audit, only tested on localhost and in simulation.
 > Coins on devnet/testnet have **no monetary value**. There is no mainnet, no presale and nothing to buy.
 
-Status: Milestone 6 (wallet, miner, explorer, Windows package) — see `PROTOCOL.md` for the exact rules, `TOKENOMICS.md`,
+Status: Milestone 7 (private testnet) — see `PROTOCOL.md` for the exact rules, `TOKENOMICS.md`,
 `NETWORK.md`, `SECURITY.md` (including known limitations) and `CONTRIBUTING.md`.
 
 ## What changed from V0.1
@@ -20,6 +20,7 @@ Status: Milestone 6 (wallet, miner, explorer, Windows package) — see `PROTOCOL
 
 * **Milestone 3:** multi-node P2P (handshake, discovery, tx/block relay, sync, bans) - see `PROTOCOL.md` section 10.
 * **Milestone 4:** cumulative-work chain selection, side chains, orphans, atomic reorganizations, mempool restoration - see `PROTOCOL.md` section 8.
+* **Milestone 7:** a private five-node test network (`privnet` profile, 5 s blocks) driven by `scripts\private_testnet.py`: hard crashes, rolling restarts, partitions, a wiped-node resync, a transaction flood, P2P attacks, database corruption and hashrate changes, with a written report in `docs/reports/`. Adds `/metrics` (Prometheus) and `/api/v1/metrics`, and `mineai check` to verify a database offline. See `docs/PRIVATE_TESTNET.md`.
 * **Milestone 6:** hardened wallet (locking, auto-lock, verified backup/restore, password change, interactive shell), user-controlled miner behind a pluggable proof-of-work backend, a full read-only explorer, a versioned `/api/v1`, and a Windows package with installer and checksums. RandomX is evaluated in `docs/RANDOMX_EVALUATION.md` and is **not** implemented.
 * **Milestone 5:** numeric difficulty target and per-block retargeting to ~60 s (LWMA over median-filtered timestamps) - see `PROTOCOL.md` section 5.10. Devnet was reset for this change (network id `mineai-devnet-v3`); older devnet databases are refused.
 
@@ -110,5 +111,5 @@ Suites: `tests/unit` (encodings, golden vectors, addresses, amounts), `tests/con
 
 ## Roadmap
 
-3 (done): three-node P2P devnet → 4 (done): fork choice and reorgs → 5 (done): dynamic difficulty → 6 (done): wallet, miner, explorer → 7: private testnet →
+3 (done): three-node P2P devnet → 4 (done): fork choice and reorgs → 5 (done): dynamic difficulty → 6 (done): wallet, miner, explorer → 7 (done): private testnet →
 8: public testnet candidate. Mainnet is **not** planned for launch without explicit authorization and an independent audit.

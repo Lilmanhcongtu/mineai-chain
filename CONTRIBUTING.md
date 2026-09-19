@@ -16,7 +16,7 @@
 .\.venv\Scripts\python.exe -m pytest --cov=mineai --cov-report=term-missing
 ```
 
-Python 3.10+ is supported. To build the Windows package: `.\scripts\build_windows.ps1` (runs the tests first; `-SkipTests` to skip).
+Python 3.10+ is supported. The multi-process private testnet program (`scripts\private_testnet.py run`, ~15 minutes) is separate from the unit tests; run it before releases and after changes to networking, storage or consensus. To build the Windows package: `.\scripts\build_windows.ps1` (runs the tests first; `-SkipTests` to skip).
 
 ## Layout
 

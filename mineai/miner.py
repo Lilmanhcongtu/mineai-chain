@@ -16,6 +16,7 @@ from .crypto import validate_address
 from .pow import get_backend
 
 COUNT_CHUNK = 512
+POLL_SECONDS = 0.25          # how often a running miner checks whether its work went stale
 
 
 def mine_worker(backend_name: str, prefix: bytes, difficulty: int, worker_id: int, workers: int, stop, result, counter):
@@ -46,7 +47,7 @@ def mine_template(params, template: dict, threads: int, should_abort=lambda: Fal
     try:
         while found is None:
             try:
-                found = result.get(timeout=1.0)
+                found = result.get(timeout=POLL_SECONDS)
             except queue.Empty:
                 if should_abort():
                     return None
@@ -89,11 +90,11 @@ def run_miner(params, node: str, address: str, blocks: int, threads: int, backen
             f"txs {len(template['transactions']) - 1}")
 
         def stale(prev=template["previous_hash"], last=[time.monotonic()]):
-            if time.monotonic() - last[0] < 3:
+            if time.monotonic() - last[0] < POLL_SECONDS:
                 return False
             last[0] = time.monotonic()
             try:
-                return http.get(node + "/api/v1/status", timeout=5).json()["latest_hash"] != prev
+                return http.get(node + "/api/v1/tip", timeout=2).json()["hash"] != prev
             except Exception:
                 return False
 

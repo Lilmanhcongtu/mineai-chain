@@ -11,7 +11,7 @@ from pathlib import Path
 import uvicorn
 from fastapi import APIRouter, Body, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -21,6 +21,7 @@ from .config import COIN_NAME, TICKER
 from .crypto import validate_address
 from .consensus import ValidationError
 from .log import event
+from .metrics import render_prometheus
 from .p2p.node import P2PConfig, P2PNode
 from .util import atomic_to_mai
 
@@ -35,19 +36,22 @@ def _error(status: int, code: str, message: str) -> JSONResponse:
 
 
 class BodyLimitMiddleware:
-    """Reject request bodies larger than `max_bytes` (declared or streamed)."""
+    """Reject request bodies larger than the limit for their path (declared or streamed).
+    `max_bytes` applies everywhere except paths listed in `path_limits` (e.g. block submission, which must be able to
+    carry a block as large as consensus allows)."""
 
-    def __init__(self, app, max_bytes: int):
-        self.app, self.max_bytes = app, max_bytes
+    def __init__(self, app, max_bytes: int, path_limits: dict[str, int] | None = None):
+        self.app, self.max_bytes, self.path_limits = app, max_bytes, path_limits or {}
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
+        limit = self.path_limits.get(scope.get("path", ""), self.max_bytes)
         declared = dict(scope["headers"]).get(b"content-length")
         if declared is not None:
             if not declared.isdigit():
                 return await _error(400, "bad_request", "invalid Content-Length")(scope, receive, send)
-            if int(declared) > self.max_bytes:
+            if int(declared) > limit:
                 return await _error(413, "too_large", "request body too large")(scope, receive, send)
         seen = 0
         exceeded = False
@@ -60,7 +64,7 @@ class BodyLimitMiddleware:
             message = await receive()
             if message["type"] == "http.request":
                 seen += len(message.get("body", b""))
-                if seen > self.max_bytes:
+                if seen > limit:
                     exceeded = True
                     raise _TooLarge
             return message
@@ -128,7 +132,11 @@ def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES
     app.state.chain = chain
     app.state.p2p = p2p
     app.add_middleware(RateLimitMiddleware, per_minute=rate_limit_per_minute)
-    app.add_middleware(BodyLimitMiddleware, max_bytes=max_body_bytes)
+    # A miner must be able to submit a block as large as consensus allows (JSON adds overhead), or a full mempool
+    # could never be mined. Found by the private testnet: 160 pending transactions made a 69 KB block, over the 64 KiB cap.
+    block_limit = max(max_body_bytes, params.max_block_bytes * 2)
+    app.add_middleware(BodyLimitMiddleware, max_bytes=max_body_bytes,
+                       path_limits={"/api/v1/mining/submit": block_limit, "/api/mining/submit": block_limit})
 
     # ---- uniform error responses (never leak stack traces)
     @app.exception_handler(ValidationError)
@@ -202,6 +210,17 @@ def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES
             return {"type": "address", "value": q}
         raise HTTPException(404, "nothing found for that search")
 
+    def gauges() -> dict:
+        tip = chain.tip()
+        return {
+            "chain_height": tip["height"], "chain_total_work": int(chain.tip_work()),
+            "difficulty": chain.expected_difficulty(tip), "estimated_hashrate": chain.estimated_hashrate(),
+            "mempool_transactions": chain.storage.mempool_count(), "side_blocks": chain.storage.side_count(),
+            "orphan_blocks": len(chain.orphans), "minted_supply_atomic": chain.minted_supply(),
+            "peers": len(p2p.peers) if p2p else 0,
+            "synced": None if p2p is None else (1 if p2p.sync_status() == "synced" else 0),
+        }
+
     api = APIRouter()
 
     # ---- health / status
@@ -217,6 +236,18 @@ def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES
     @api.get("/status")
     def status():
         return status_info()
+
+    @api.get("/tip")
+    def tip():
+        """Cheapest possible 'has anything changed?' probe (used by miners to drop stale work quickly)."""
+        t = chain.tip()
+        return {"height": t["height"], "hash": t["hash"]}
+
+    @api.get("/metrics")
+    def metrics_json():
+        """Read-only operational counters and gauges (JSON). Same data as /metrics."""
+        return {"gauges": gauges(), "counters": chain.metrics.snapshot(), "uptime_seconds": chain.metrics.uptime(),
+                "network": params.name, "version": __version__}
 
     @api.get("/fee")
     def fee():
@@ -289,6 +320,10 @@ def create_app(chain: Blockchain, *, max_body_bytes: int = config.MAX_BODY_BYTES
     app.include_router(api, prefix="/api/v1")
     app.include_router(api, prefix="/api", include_in_schema=False)      # unversioned aliases (kept for compatibility)
 
+    @app.get("/metrics", response_class=PlainTextResponse)
+    def metrics_prometheus():
+        return render_prometheus(chain.metrics, gauges(), {"version": __version__, "network": params.name})
+
     # ---- explorer (read-only HTML: no keys, no admin actions)
     PAGE = 20
 
@@ -354,6 +389,29 @@ async def _serve(chain: Blockchain, params, host: str, port: int) -> None:
     finally:
         if p2p:
             await p2p.stop()
+
+
+def check_main() -> None:
+    """`mineai check`: open a database offline and fully re-verify it (hashes, difficulty, work, balances)."""
+    import argparse
+    from .blockchain import ChainError
+    from .storage import StorageError
+    ap = argparse.ArgumentParser(description="Verify a MineAI chain database offline (the node must be stopped).")
+    ap.add_argument("--network", default=None)
+    ap.add_argument("--data-dir", type=Path, default=None)
+    args = ap.parse_args()
+    params = config.get_params(args.network)
+    path = config.db_path_for(params, args.data_dir)
+    if not path.exists():
+        raise SystemExit(f"no database at {path}")
+    try:
+        chain = Blockchain(path, params)
+        chain.verify_integrity()
+    except (ChainError, StorageError) as exc:
+        raise SystemExit(f"CHECK FAILED: {exc}")
+    print(f"OK: {params.name} database at {path} verified: height {chain.tip()['height']}, "
+          f"total work {chain.tip_work()}, minted supply {chain.minted_supply()}")
+    chain.close()
 
 
 def main() -> None:

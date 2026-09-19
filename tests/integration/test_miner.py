@@ -110,11 +110,16 @@ class Resp:
 class FakeHttp:
     def __init__(self, template, submits):
         self.template, self.submits, self.posted = template, list(submits), []
+        self.tip_hash, self.tip_calls, self.status_calls = "0" * 64, 0, 0
 
     def get(self, url, **kw):
         if url.endswith("/mining/template"):
             return self.template() if callable(self.template) else Resp(200, self.template)
-        return Resp(200, {"latest_hash": "irrelevant"})
+        if url.endswith("/tip"):
+            self.tip_calls += 1
+        if url.endswith("/status"):
+            self.status_calls += 1
+        return Resp(200, {"height": 0, "hash": self.tip_hash})
 
     def post(self, url, json=None, **kw):
         self.posted.append(json)
@@ -246,3 +251,34 @@ def test_nothing_starts_mining_as_a_side_effect():
     assert offenders == []
     src = (root / "miner.py").read_text()
     assert "daemon=True" in src and "atexit" not in src and "Scheduler" not in src           # workers die with the command
+
+
+def test_miner_polls_the_light_tip_endpoint_quickly_and_drops_stale_work():
+    """Regression for the private-testnet finding: polling every 3 s wasted most hashing at 5 s blocks."""
+    import time
+    http = FakeHttp(canned_template(), [Resp(200, {"accepted": True, "height": 1, "hash": "ab" * 32})])
+    seen = {"polls": 0}
+
+    def miner(params, template, threads, stale, backend):
+        if seen["polls"] == 0:                                           # first attempt: a new block appears mid-search
+            assert stale() is False                                      # nothing has changed yet
+            http.tip_hash = "f" * 64
+            time.sleep(M.POLL_SECONDS + 0.05)
+            seen["polls"] += 1
+            assert stale() is True                                       # noticed within one poll interval
+            return None
+        return canned_miner(params, template, threads, stale, backend)
+    out = []
+    M.run_miner(TEST, "http://node", "addr", 1, 1, out=out.append, http=http, miner=miner)
+    assert http.tip_calls >= 1 and any("Stale work" in l for l in out) and M.POLL_SECONDS <= 0.5
+    assert http.status_calls == 0                                        # the heavy /status endpoint is not polled
+
+
+def test_tip_endpoint_is_cheap_read_only_and_correct(tmp_path):
+    from fastapi.testclient import TestClient
+    from mineai.node import create_app
+    chain, _ = funded(tmp_path, blocks=3)
+    client = TestClient(create_app(chain, local_hosts=frozenset({"testclient"}), rate_limit_per_minute=100_000))
+    body = client.get("/api/v1/tip").json()
+    assert body == {"height": 3, "hash": chain.tip()["hash"]} and client.get("/api/tip").json() == body
+    assert client.post("/api/v1/tip", json={}).status_code == 405

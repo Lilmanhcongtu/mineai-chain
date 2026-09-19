@@ -37,11 +37,13 @@ like `password`, `private_key`, `secret`, `mnemonic` or `seed`.
 3. **Wallet:** locking, inactivity auto-lock, verified backup/restore and password change exist, but: there is no recovery phrase and no hardware-wallet support; password strength is only a floor (≥ 10 characters, not repetitive, not in a short common list); while unlocked the key lives in Python process memory and cannot be securely wiped (lock drops references and runs the garbage collector, best effort); owner-only file permissions are best effort on Windows (`icacls`); the one-shot `send` command briefly unlocks the key to sign; a keylogger or malware on the machine defeats everything.
 4. **Address format and encodings are project-specific and unreviewed** by cryptographers.
 5. **Mempool:** no replace-by-fee, no eviction by fee rate (new transactions are refused when full).
-6. **Rate limiting is in-process and per-IP** and is not a substitute for network-level protection. **P2P has no encryption or peer authentication:** traffic is plaintext and node ids are self-declared, so a peer can lie about its height and an on-path attacker can read or drop messages. There is no eclipse-attack protection (no address diversity rules, no anchor connections) and bans by node id can be evaded by generating new ids (non-loopback IPs are also banned). Use only on trusted/local networks.
-7. **Loopback check** for mining endpoints trusts the socket peer address; a reverse proxy defeats it.
-8. **Windows package:** unsigned executables (SmartScreen and some antivirus products may warn; verify the SHA-256), built on this machine rather than reproducibly, and only smoke-tested on one Windows installation. The CPU miner's worker processes are covered by tests, the frozen build by a manual end-to-end run.
-9. **Timestamp validation against wall-clock time** makes validity slightly time-dependent.
-10. No independent security audit. Do not use for value.
+6. **The P2P layer's abuse handling was wrong twice in ways only a live multi-process test exposed** (honest nodes banning each other under load; blocks refused by an API cap). Both are fixed and covered by regression tests, but they show that the current defenses are tuned by observation on one machine, not proven. Ban thresholds, rate limits and decay rates need re-checking on real networks and hostile traffic.
+7. **Rate limiting is in-process and per-IP** and is not a substitute for network-level protection. **P2P has no encryption or peer authentication:** traffic is plaintext and node ids are self-declared, so a peer can lie about its height and an on-path attacker can read or drop messages. There is no eclipse-attack protection (no address diversity rules, no anchor connections) and bans by node id can be evaded by generating new ids (non-loopback IPs are also banned). Use only on trusted/local networks.
+8. **Monitoring endpoints are unauthenticated.** `/metrics` and `/api/v1/metrics` are read-only and contain no keys, addresses or transaction data, but they do reveal node height, peer count, uptime and abuse counters to anyone who can reach the API. Keep the API on loopback or a private network.
+9. **Loopback check** for mining endpoints trusts the socket peer address; a reverse proxy defeats it.
+10. **Windows package:** unsigned executables (SmartScreen and some antivirus products may warn; verify the SHA-256), built on this machine rather than reproducibly, and only smoke-tested on one Windows installation. The CPU miner's worker processes are covered by tests, the frozen build by a manual end-to-end run.
+11. **Timestamp validation against wall-clock time** makes validity slightly time-dependent.
+12. No independent security audit. Do not use for value.
 
 ## Supported versions
 

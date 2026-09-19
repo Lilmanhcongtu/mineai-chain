@@ -10,14 +10,17 @@
 
 ## 1. Networks
 
-| | devnet | testnet | mainnet |
-|---|---|---|---|
-| `network_id` (ASCII) | `mineai-devnet-v3` | `mineai-testnet-v1` | `mineai-mainnet-v1` |
-| address prefix | `DMAI` | `TMAI` | `MAI` |
-| default API port | 8080 | 18080 | 28080 |
-| default P2P port | 8081 | 18081 | 28081 |
-| coinbase maturity | 3 blocks | 10 | 100 |
-| status | usable locally | genesis not yet created | **disabled**, not launched |
+| | devnet | testnet | privnet | mainnet |
+|---|---|---|---|---|
+| `network_id` (ASCII) | `mineai-devnet-v3` | `mineai-testnet-v1` | `mineai-privnet-v1` | `mineai-mainnet-v1` |
+| address prefix | `DMAI` | `TMAI` | `PMAI` | `MAI` |
+| default API port | 8080 | 18080 | 38080 | 28080 |
+| default P2P port | 8081 | 18081 | 38081 | 28081 |
+| coinbase maturity | 3 blocks | 10 | 3 | 100 |
+| target block time | 60 s | 60 s | **5 s** | 60 s |
+| initial / minimum difficulty | 65 536 / 256 | 65 536 / 256 | 16 384 / 256 | 65 536 / 256 |
+| difficulty window | 60 | 60 | 30 | 60 |
+| status | usable locally | genesis not yet created | **private multi-node testing only** | **disabled**, not launched |
 
 The `network_id` is bound into every transaction signature, txid, coinbase id and block hash, and
 the address prefix is bound into every address checksum. A transaction or block from one network is
@@ -302,13 +305,14 @@ This software speaks version 1 only. A second `hello` after the handshake is a v
 | `ping` / `pong` | `{nonce}` | liveness (every 30 s); a peer silent for 90 s is dropped |
 | `get_peers` / `peers` | `{}` / `{addrs:[≤50 "host:port"]}` | peer discovery |
 | `inv` | `{kind:"tx"\|"block", hashes:[1..500 hex]}` | announce that we have items |
-| `get_data` | same shape | request announced items (at most 16 are served per request) |
+| `get_data` | same shape | request announced items (at most 500 transactions or 16 blocks are served per request) |
 | `tx` / `block` | `{tx}` / `{block}` | the item itself (may also be pushed unsolicited) |
 | `get_blocks` | `{locator:[1..32 hashes], count:1..64}` | request blocks after the newest locator hash on the responder's best chain (§8.6) |
 | `blocks` | `{blocks:[≤64 blocks]}` | reply to `get_blocks`; **only accepted if we asked** |
 
 ### 10.4 Relay and synchronization
 
+* A transaction whose nonce is ahead of the sender's next nonce (its predecessor has not arrived: relay can reorder) is **held**, not dropped and not penalized, in a bounded pool (100 transactions, 10 per sender, 5 minutes) and retried in nonce order whenever another transaction is admitted or the tip changes; it is relayed once it is admitted. Transactions that reuse a nonce, or are otherwise invalid, are rejected as before.
 * A newly accepted transaction or block is announced with `inv` to every peer not already known to have it (never back to its source). An `inv` for an item we already have, or have already requested from someone (for up to the request timeout), causes no request. A `tx`/`block` already seen is dropped without reprocessing or rebroadcast.
 * When a peer's `hello` shows more total work than ours, or a received block is an orphan, we synchronize: send `get_blocks` with our locator, process each returned block with the block classes of §8.3 (reorganizations happen automatically as work accumulates), and repeat until a batch is short or nothing new was learned. Only one synchronization per peer runs at a time.
 * Whenever our best tip changes (extension or reorganization) we announce the new tip with `inv` to peers that do not know it. Side blocks are not announced.
@@ -317,8 +321,9 @@ This software speaks version 1 only. A second `hello` after the handshake is a v
 ### 10.5 Peer management and abuse handling (policy, not consensus)
 
 * Limits: 16 peers total, 12 inbound, 4 outbound targets; 5 s connect timeout; 20 s write timeout; 20 s request timeout.
-* Rate limit per peer: 50 messages/second with a burst of 100; excess messages are dropped and scored.
-* Misbehavior score per peer identity (accumulated across reconnects): malformed frame/JSON 50; unknown message type 20; invalid transaction 20 (1 for races such as duplicate/nonce/insufficient funds); invalid block 50 (5 for a timestamp problem; 0 for a fork that is merely too deep); invalid block during synchronization 100; unsolicited `blocks` 20 (non-fatal); rate-limit excess 10 each; protocol-level violations that are fatal close the connection.
+* Rate limit per peer: 200 messages/second with a burst of 1000 (an honest burst must never be punished); messages beyond that are dropped and cost 5 points. Transaction announcements are batched (up to 500 hashes per `inv`, flushed after 50 ms); block announcements are sent at once.
+* Misbehavior score per peer identity (accumulated across reconnects): malformed frame/JSON 50; unknown message type 20; invalid transaction 20 (races such as an already-mined, duplicate, unfunded or future-nonce transaction cost nothing); invalid block 50 (5 for a timestamp problem; 0 for a fork that is merely too deep); invalid block during synchronization 100; unsolicited `blocks` 20 (non-fatal); rate-limit excess 5 each; protocol-level violations that are fatal close the connection.
+* Scores **decay**: one point is forgotten every 5 seconds, so occasional noise never accumulates into a ban while sustained abuse does. Honest races (a transaction already mined, a duplicate, an unfunded transaction, a future nonce) are not scored at all.
 * A score of 100 bans the identity for 10 minutes (node id, and IP for non-loopback addresses; loopback is never IP-banned so one bad local process cannot block every local node).
 * Known peer addresses are persisted in the database, exchanged with `get_peers`, retried with failure counting (dropped after 10 failures, configured seeds never), and used to reconnect after restarts.
 * P2P binds to 127.0.0.1 by default. There are no administrative P2P messages.

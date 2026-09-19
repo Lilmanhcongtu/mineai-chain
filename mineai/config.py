@@ -128,7 +128,29 @@ MAINNET = NetworkParams(
     enabled=False,      # mainnet is intentionally disabled: placeholder for Milestone 12 planning only
 )
 
-PROFILES = {p.name: p for p in (DEVNET, TESTNET, MAINNET)}
+# A network for PRIVATE multi-node testing on one machine or a lab (Milestone 7). Short target block time and low
+# initial difficulty so forks, reorganizations and retargeting happen in minutes. Never for public use.
+PRIVNET = NetworkParams(
+    name="privnet",
+    network_id="mineai-privnet-v1",
+    address_prefix="PMAI",
+    label="PRIVATE TEST NETWORK (no monetary value)",
+    default_port=38080,
+    default_p2p_port=38081,
+    block_reward=_mai(25),
+    max_supply=_mai(100_000_000),
+    min_fee=1_000,
+    default_fee=10_000,
+    difficulty=16_384,
+    min_difficulty=256,
+    target_spacing=5,
+    lwma_window=30,
+    genesis_timestamp=1_767_225_600,
+    genesis_hash="4b79822b6a7ebf9af6848c194b6543ef3934bc23a742a1a7e710f7c6e9c47130",
+    coinbase_maturity=3,
+)
+
+PROFILES = {p.name: p for p in (DEVNET, TESTNET, PRIVNET, MAINNET)}
 
 
 def get_params(name: str | None = None) -> NetworkParams:

@@ -19,6 +19,7 @@ from .config import NetworkParams, get_params
 from .consensus import ValidationError
 from .crypto import validate_address
 from .log import event
+from .metrics import Metrics
 from .storage import WIRE_KEYS, Storage, StorageError
 
 log = logging.getLogger("mineai.chain")
@@ -82,6 +83,7 @@ class Blockchain:
         self.lock = threading.RLock()
         self.orphans: OrderedDict[str, dict] = OrderedDict()     # in-memory, bounded (PROTOCOL 8.3)
         self.reorg_count = 0
+        self.metrics = Metrics()
         self.storage = Storage(db_path)
         try:
             self._open()
@@ -309,9 +311,11 @@ class Blockchain:
             with self.lock:
                 self._admit(tx, now)
         except ValidationError as exc:
+            self.metrics.inc("transactions_rejected", code=exc.code)
             event(log, logging.INFO, "tx_rejected", code=exc.code,
                   txid=tx.get("txid") if isinstance(tx, dict) else None)
             raise
+        self.metrics.inc("transactions_accepted")
         event(log, logging.INFO, "tx_accepted", txid=tx["txid"])
         return tx
 
@@ -431,6 +435,7 @@ class Blockchain:
                     raise ValidationError("stale block: does not extend the current tip", "stale")
                 accepted = self._extend_tip(block, now)
         except ValidationError as exc:
+            self.metrics.inc("blocks_rejected", code=exc.code)
             event(log, logging.INFO, "block_rejected", code=exc.code,
                   height=block.get("height") if isinstance(block, dict) else None)
             raise
@@ -448,9 +453,11 @@ class Blockchain:
                 if result.status in ("extended", "reorg", "side"):
                     self._adopt_orphans(result.block["hash"], now)
         except ValidationError as exc:
+            self.metrics.inc("blocks_rejected", code=exc.code)
             event(log, logging.INFO, "block_rejected", code=exc.code,
                   height=block.get("height") if isinstance(block, dict) else None)
             raise
+        self.metrics.inc("blocks_received", status=result.status)
         return result
 
     def _process(self, block: dict, now: int) -> BlockResult:
@@ -506,6 +513,7 @@ class Blockchain:
             stored = self._connect(block, now, total)
             st.mempool_remove([t["txid"] for t in block["transactions"][1:]])
             self._prune_mempool()
+        self.metrics.inc("blocks_accepted")
         self._housekeeping()
         return stored
 
@@ -579,6 +587,9 @@ class Blockchain:
                       hash=path[index]["hash"])
             raise                                              # the transaction rolled back: old chain untouched
         self.reorg_count += 1
+        self.metrics.inc("reorgs")
+        self.metrics.inc("reorg_blocks_disconnected", len(disconnected))
+        self.metrics.inc("reorg_blocks_connected", len(path))
         event(log, logging.WARNING, "reorganization", old_tip=old_tip, new_tip=new_hash,
               fork_height=fork["height"], disconnected=len(disconnected), connected=len(path))
         self._housekeeping()

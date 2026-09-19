@@ -15,6 +15,7 @@ commands:
   node     run a node with the REST API, explorer and peer-to-peer networking
   wallet   create/backup/restore wallets, check balances, send, interactive shell
   miner    mine blocks (runs only while the command runs; Ctrl+C stops it)
+  check    verify a chain database offline (stop the node first)
   version  print the version
 
 Run 'mineai <command> --help' for the options of each command."""
@@ -34,6 +35,8 @@ def main(argv: list[str] | None = None) -> None:
         from .wallet import main as run
     elif command == "miner":
         from .miner import main as run
+    elif command == "check":
+        from .node import check_main as run
     elif command in ("version", "--version"):
         from . import __version__, PROTOCOL_VERSION
         print(f"mineai {__version__} (protocol {PROTOCOL_VERSION})")
