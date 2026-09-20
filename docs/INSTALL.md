@@ -34,17 +34,39 @@ $env:MINEAI_NETWORK = "testnet"
 .\mineai-wallet.cmd --network testnet shell --wallet me.testnet.wallet.json
 ```
 
-## 2. Linux (from source; not yet verified on Linux)
+## 2. Linux (from source)
 
-Requires Python 3.10 or newer.
+Requires Python 3.10 or newer (`python3 --version`) with the `venv` module (on Debian/Ubuntu: `sudo apt install python3-venv`).
+CI runs this whole section on Ubuntu for every commit; other distributions and macOS have not been tried.
 
 ```bash
-tar xzf mineai-0.2.0rc1-source.tar.gz && cd mineai-0.2.0rc1
-./packaging/linux/install.sh          # creates ./.venv and installs; stops on any error
-MINEAI_NETWORK=testnet ./packaging/linux/mineai node
-./packaging/linux/mineai wallet --network testnet create --wallet me.testnet.wallet.json
-./packaging/linux/mineai miner  --network testnet --address <TMAI...> --blocks 5
+tar xzf mineai-0.2.0rc1-source.tar.gz && cd mineai-0.2.0rc1      # or: git clone <repo> && cd MineAI
+sh packaging/linux/install.sh
+export PATH="$HOME/.local/bin:$PATH"                              # if ~/.local/bin is not on your PATH yet
 ```
+
+The script creates a private virtualenv in `~/.local/share/mineai` (override with `PREFIX=`) and four commands in
+`~/.local/bin` (override with `BIN=`): `mineai`, `mineai-node`, `mineai-wallet`, `mineai-miner`. It never touches wallets
+or chain data. Then, on the **testnet**:
+
+```bash
+export MINEAI_NETWORK=testnet
+mineai version
+mineai-node                                                       # API + explorer on http://127.0.0.1:18080, P2P on 127.0.0.1:18081 (Ctrl+C stops it)
+```
+
+In a second terminal (the wallet asks for a password of at least 10 characters):
+
+```bash
+export MINEAI_NETWORK=testnet
+mineai wallet --network testnet create  --wallet me.testnet.wallet.json
+mineai wallet --network testnet address --wallet me.testnet.wallet.json
+mineai miner  --network testnet --address <TMAI...> --blocks 5      # mines only while this command runs; Ctrl+C stops it
+mineai wallet --network testnet balance --wallet me.testnet.wallet.json
+```
+
+To run a node as a service, see `DEPLOY_VPS.md`. To remove it: `rm -rf ~/.local/share/mineai ~/.local/bin/mineai*`
+(your data directory is not touched).
 
 ## 3. From source (any OS)
 

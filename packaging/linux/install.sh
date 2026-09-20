@@ -1,5 +1,5 @@
 #!/bin/sh
-# MineAI TESTNET - Linux source install.  UNVERIFIED: this script has never been run on Linux.
+# MineAI TESTNET - Linux source install.  Exercised on Ubuntu by CI (.github/workflows/ci.yml).
 # Installs into a private virtualenv under $PREFIX (default ~/.local/share/mineai). Needs python3 >= 3.10.
 # It never touches wallets or chain data.
 set -eu
@@ -23,6 +23,12 @@ exec "$PREFIX/venv/bin/python" -m mineai $tool "\$@"
 WRAP
     chmod 755 "$BIN/mineai-$tool"
 done
-echo "Installed: mineai-node, mineai-wallet, mineai-miner in $BIN (add it to PATH if needed)."
+# Generic entry point for every subcommand: mineai node|wallet|miner|check|version
+cat > "$BIN/mineai" <<WRAP
+#!/bin/sh
+exec "$PREFIX/venv/bin/python" -m mineai "\$@"
+WRAP
+chmod 755 "$BIN/mineai"
+echo "Installed: mineai, mineai-node, mineai-wallet, mineai-miner in $BIN (add it to PATH if needed)."
 echo "Default network is devnet; use MINEAI_NETWORK=testnet for the public testnet candidate."
-echo "Uninstall: rm -rf \"$PREFIX\" \"$BIN\"/mineai-node \"$BIN\"/mineai-wallet \"$BIN\"/mineai-miner   (your data directory is not touched)"
+echo "Uninstall: rm -rf \"$PREFIX\" \"$BIN\"/mineai \"$BIN\"/mineai-node \"$BIN\"/mineai-wallet \"$BIN\"/mineai-miner   (your data directory is not touched)"
