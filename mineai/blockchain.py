@@ -116,7 +116,7 @@ class Blockchain:
                              f"{p.name}: the software and the network profile disagree")
         if self.storage.block_count() == 0:
             with self.storage.atomic():
-                self.storage.insert_genesis(genesis)
+                self.storage.insert_genesis(genesis, p.genesis_allocations)
                 self.storage.meta_set("network_id", p.network_id)
                 self.storage.meta_set("genesis_hash", genesis["hash"])
             event(log, logging.INFO, "chain_initialized", network=p.name, genesis=genesis["hash"])
@@ -143,8 +143,8 @@ class Blockchain:
             raise ChainError(f"stored chain violates consensus rules: {exc}") from exc
 
     def _verify_integrity(self) -> None:
-        p, prev, minted, work = self.params, None, 0, 0
-        balances: dict[str, int] = {}
+        p, prev, minted, work = self.params, None, C.genesis_supply(self.params), 0
+        balances: dict[str, int] = dict(p.genesis_allocations)
         nonces: dict[str, int] = {}
         for block in self.storage.iter_blocks_ascending():
             if block["height"] == 0:

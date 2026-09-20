@@ -197,8 +197,27 @@ def next_difficulty(params: NetworkParams, history: list[tuple[int, int]]) -> in
     return max(1, min(MAX_DIFFICULTY, max(params.min_difficulty, nxt)))
 
 
+GENESIS_ALLOC_DOMAIN = b"MineAI/genesis-allocations/v1\x00"
+
+
+def genesis_allocation_root(params: NetworkParams) -> str:
+    """Commitment to the genesis allocations, stored in the genesis block's merkle_root so that two nodes only share a
+    genesis if they agree on every pre-allocated balance. Networks with no allocation keep the all-zero root, so their
+    genesis hashes are unchanged."""
+    if not params.genesis_allocations:
+        return ZERO_HASH
+    h = hashlib.sha256(GENESIS_ALLOC_DOMAIN)
+    for address, amount in sorted(params.genesis_allocations):
+        h.update(lp(address) + u64(amount))
+    return h.hexdigest()
+
+
+def genesis_supply(params: NetworkParams) -> int:
+    return sum(amount for _, amount in params.genesis_allocations)
+
+
 def genesis_block(params: NetworkParams) -> dict:
-    block = {"height": 0, "previous_hash": ZERO_HASH, "merkle_root": ZERO_HASH,
+    block = {"height": 0, "previous_hash": ZERO_HASH, "merkle_root": genesis_allocation_root(params),
              "timestamp": params.genesis_timestamp, "difficulty": 0, "nonce": 0, "transactions": []}
     block["hash"] = block_hash(params, block)
     return block

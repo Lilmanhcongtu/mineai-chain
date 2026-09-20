@@ -282,14 +282,16 @@ class Storage:
                 "AND miner != 'GENESIS' GROUP BY miner", (low, high)).fetchall()
             return {r[0]: int(r[1]) for r in rows}
 
-    def insert_genesis(self, block: dict) -> None:
+    def insert_genesis(self, block: dict, allocations: tuple = ()) -> None:
         with self.atomic():
             self.conn.execute(
                 "INSERT INTO blocks(height,hash,previous_hash,merkle_root,timestamp,difficulty,nonce,"
                 "miner,subsidy,fees,body_json,total_work) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                 (0, block["hash"], block["previous_hash"], block["merkle_root"], block["timestamp"],
                  block["difficulty"], block["nonce"], "GENESIS", 0, 0, "[]", "0"))
-            self.meta_set("minted_supply", "0")
+            for address, amount in allocations:           # SANDBOX only: pre-allocated genesis balances
+                self.conn.execute("INSERT INTO accounts(address,balance,nonce) VALUES(?,?,0)", (address, amount))
+            self.meta_set("minted_supply", str(sum(amount for _, amount in allocations)))
 
     def apply_block(self, block: dict, miner: str, subsidy: int, fees: int,
                     changes: dict[str, tuple[int, int]], undo: dict[str, tuple[int, int] | None],

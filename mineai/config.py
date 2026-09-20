@@ -54,6 +54,9 @@ class NetworkParams:
     max_side_blocks: int = 2000
     max_orphans: int = 100
     enabled: bool = True
+    # Optional genesis allocation: ((address, atomic_amount), ...). Empty for every public profile (no premine). Only the
+    # SANDBOX profile sets it. When non-empty it is committed into the genesis block (merkle_root) and into the fingerprint.
+    genesis_allocations: tuple = ()
 
     def __post_init__(self):
         # Overflow / sanity guards: every consensus integer must fit in INT_MAX (SQLite + u64 wire format).
@@ -70,6 +73,16 @@ class NetworkParams:
             raise ValueError("invalid target_spacing / lwma_window / max_future_seconds")
         if not self.network_id.isascii() or not self.address_prefix.isalpha() or not self.address_prefix.isupper():
             raise ValueError("network_id must be ASCII and address_prefix upper-case letters")
+        seen = set()
+        for entry in self.genesis_allocations:
+            if not (isinstance(entry, tuple) and len(entry) == 2 and isinstance(entry[0], str)
+                    and isinstance(entry[1], int) and not isinstance(entry[1], bool) and entry[1] > 0):
+                raise ValueError("genesis_allocations must be a tuple of (address, positive integer amount)")
+            if not entry[0].startswith(self.address_prefix) or entry[0] in seen:
+                raise ValueError("genesis allocation addresses must use the network prefix and be unique")
+            seen.add(entry[0])
+        if sum(a for _, a in self.genesis_allocations) > self.max_supply:
+            raise ValueError("genesis allocations exceed max_supply")
 
 
 def _mai(x: int) -> int:
@@ -150,7 +163,31 @@ PRIVNET = NetworkParams(
     coinbase_maturity=3,
 )
 
-PROFILES = {p.name: p for p in (DEVNET, TESTNET, PRIVNET, MAINNET)}
+# A SANDBOX for local experiments that need a large balance without mining for months (chain of its own: network id,
+# SMAI addresses, ports 48080/48081). Its genesis pre-allocates coins, unlike every other profile, so it must never be
+# confused with devnet/testnet/mainnet. Coins have no value and cannot move to any other network.
+SANDBOX = NetworkParams(
+    name="sandbox",
+    network_id="mineai-sandbox-v1",
+    address_prefix="SMAI",
+    label="SANDBOX (pre-allocated genesis, no monetary value)",
+    default_port=48080,
+    default_p2p_port=48081,
+    block_reward=_mai(25),
+    max_supply=_mai(100_000_000),
+    min_fee=1_000,
+    default_fee=10_000,
+    difficulty=16_384,
+    min_difficulty=256,
+    target_spacing=5,
+    lwma_window=30,
+    genesis_timestamp=1_767_225_600,
+    genesis_hash="3e683e0e9dc155ccb93e53a5982c60afe8bb59d4564ab1dbca43c8aecbc0275b",
+    coinbase_maturity=3,
+    genesis_allocations=(("SMAIMALB5FZD3Q2542WGIC2VLQVMU7P3QQHU3KTKUJA", _mai(20_000_000)),),
+)
+
+PROFILES = {p.name: p for p in (DEVNET, TESTNET, PRIVNET, SANDBOX, MAINNET)}
 
 
 def get_params(name: str | None = None) -> NetworkParams:
@@ -192,10 +229,12 @@ def consensus_fingerprint(params: NetworkParams) -> str:
     import hashlib
     import json
     values = {name: getattr(params, name) for name in CONSENSUS_FIELDS}
+    if params.genesis_allocations:                       # only when set: existing profiles keep their pinned fingerprints
+        values["genesis_allocations"] = [list(e) for e in params.genesis_allocations]
     return hashlib.sha256(json.dumps(values, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-TEST_NETWORKS = ("devnet", "testnet", "privnet")
+TEST_NETWORKS = ("devnet", "testnet", "privnet", "sandbox")
 
 
 def banner_lines(params: NetworkParams, version: str) -> list[str]:

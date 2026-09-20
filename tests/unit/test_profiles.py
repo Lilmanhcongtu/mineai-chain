@@ -6,13 +6,13 @@ import dataclasses
 import pytest
 
 from mineai import consensus as C
-from mineai.config import DEVNET, MAINNET, PRIVNET, PROFILES, TESTNET, get_params
+from mineai.config import DEVNET, MAINNET, PRIVNET, PROFILES, SANDBOX, TESTNET, get_params
 
-ALL = [DEVNET, TESTNET, PRIVNET, MAINNET]
+ALL = [DEVNET, TESTNET, PRIVNET, SANDBOX, MAINNET]
 
 
 def test_every_profile_is_registered_and_names_match():
-    assert set(PROFILES) == {"devnet", "testnet", "privnet", "mainnet"}
+    assert set(PROFILES) == {"devnet", "testnet", "privnet", "sandbox", "mainnet"}
     assert all(PROFILES[p.name] is p for p in ALL)
 
 
@@ -45,7 +45,7 @@ def test_a_profile_cannot_be_disabled_by_accident():
 
 def test_economics_are_identical_across_profiles():
     """Only the network-specific parameters differ; monetary policy must never depend on the profile."""
-    for p in (TESTNET, PRIVNET, MAINNET):
+    for p in (TESTNET, PRIVNET, SANDBOX, MAINNET):
         assert (p.block_reward, p.max_supply, p.min_fee, p.default_fee) == (
             DEVNET.block_reward, DEVNET.max_supply, DEVNET.min_fee, DEVNET.default_fee)
 
