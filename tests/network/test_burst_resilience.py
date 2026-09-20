@@ -195,8 +195,10 @@ def test_simultaneous_dials_leave_exactly_one_connection_not_zero(tmp_path):
     """Regression: A->B and B->A at the same instant used to be rejected as duplicates by BOTH sides, leaving no link."""
     async def scenario():
         async with Cluster(tmp_path) as c:
-            a = await c.start("a")
-            b = await c.start("b")
+            # The background connect loop redials remembered peers; it must not run here, or it can re-link the
+            # nodes before the test observes them both unlinked (flaky on fast loopback, e.g. Linux CI).
+            a = await c.start("a", connect_interval=3600)
+            b = await c.start("b", connect_interval=3600)
             for _ in range(5):
                 tasks = [asyncio.create_task(a._connect(addr(b))), asyncio.create_task(b._connect(addr(a)))]
                 await until(lambda: a.node_id in b.peers and b.node_id in a.peers, timeout=10, msg="linked")
