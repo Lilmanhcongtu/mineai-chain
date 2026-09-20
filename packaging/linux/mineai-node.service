@@ -1,0 +1,34 @@
+# systemd unit for a MineAI TESTNET node (no monetary value). Install as /etc/systemd/system/mineai-node.service
+# Config lives in /etc/mineai/node.env (see docs/DEPLOY_VPS.md). Created for testnet seeds; UNVERIFIED on a real host.
+[Unit]
+Description=MineAI testnet node
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=mineai
+Group=mineai
+EnvironmentFile=/etc/mineai/node.env
+# install.sh (run as the mineai user) puts the wrapper here:
+ExecStart=/home/mineai/.local/bin/mineai-node
+Restart=on-failure
+RestartSec=5
+# Chain data lives in MINEAI_DATA_DIR; state is committed atomically, so a hard stop is safe.
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/mineai
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target
