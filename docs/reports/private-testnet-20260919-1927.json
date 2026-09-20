@@ -1,0 +1,8186 @@
+{
+ "results": [
+  {
+   "scenario": "setup",
+   "name": "all 5 nodes start and answer the health check",
+   "passed": true,
+   "detail": "5/5 ready"
+  },
+  {
+   "scenario": "setup",
+   "name": "all nodes share the pinned privnet genesis",
+   "passed": true,
+   "detail": "1 distinct"
+  },
+  {
+   "scenario": "setup",
+   "name": "seeded as a chain, discovery forms a mesh (every node has >= 3 peers)",
+   "passed": true,
+   "detail": "{'n1': 4, 'n2': 4, 'n3': 4, 'n4': 4, 'n5': 4}"
+  },
+  {
+   "scenario": "baseline",
+   "name": "chain grows under two competing miners",
+   "passed": true,
+   "detail": "height 25"
+  },
+  {
+   "scenario": "baseline",
+   "name": "after mining stops, all 5 nodes agree on the same tip",
+   "passed": true,
+   "detail": "height 25"
+  },
+  {
+   "scenario": "kill_recovery",
+   "name": "kill #1: n4's database is consistent right after the crash",
+   "passed": true,
+   "detail": "OK: privnet database at C:\\Users\\USER\\AppData\\Local\\Temp\\mineai-privnet-d_by12wq\\n4\\privnet\\chain.db verified: height 28, total work 192420010, minted supply 700000000"
+  },
+  {
+   "scenario": "kill_recovery",
+   "name": "kill #1: n4 restarts",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "kill_recovery",
+   "name": "kill #1: n4 catches up to the live network (within 2 blocks)",
+   "passed": true,
+   "detail": "33 vs 33"
+  },
+  {
+   "scenario": "kill_recovery",
+   "name": "kill #2: n2's database is consistent right after the crash",
+   "passed": true,
+   "detail": "OK: privnet database at C:\\Users\\USER\\AppData\\Local\\Temp\\mineai-privnet-d_by12wq\\n2\\privnet\\chain.db verified: height 34, total work 248806659, minted supply 850000000"
+  },
+  {
+   "scenario": "kill_recovery",
+   "name": "kill #2: n2 restarts",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "kill_recovery",
+   "name": "kill #2: n2 catches up to the live network (within 2 blocks)",
+   "passed": true,
+   "detail": "39 vs 39"
+  },
+  {
+   "scenario": "kill_recovery",
+   "name": "kill #3: n5's database is consistent right after the crash",
+   "passed": true,
+   "detail": "OK: privnet database at C:\\Users\\USER\\AppData\\Local\\Temp\\mineai-privnet-d_by12wq\\n5\\privnet\\chain.db verified: height 39, total work 306532286, minted supply 975000000"
+  },
+  {
+   "scenario": "kill_recovery",
+   "name": "kill #3: n5 restarts",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "kill_recovery",
+   "name": "kill #3: n5 catches up to the live network (within 2 blocks)",
+   "passed": true,
+   "detail": "42 vs 42"
+  },
+  {
+   "scenario": "kill_recovery",
+   "name": "after 3 crashes and restarts all nodes converge on one tip",
+   "passed": true,
+   "detail": "height 42"
+  },
+  {
+   "scenario": "rolling_restart",
+   "name": "after a rolling restart of 4 nodes under load, all nodes converge",
+   "passed": true,
+   "detail": "height 45"
+  },
+  {
+   "scenario": "rolling_restart",
+   "name": "the mesh re-forms from persisted peers (>= 2 peers each)",
+   "passed": true,
+   "detail": "{'n1': 4, 'n2': 4, 'n3': 4, 'n4': 4, 'n5': 4}"
+  },
+  {
+   "scenario": "partition",
+   "name": "while partitioned the two sides really diverge",
+   "passed": true,
+   "detail": "heights {'n1': 53, 'n2': 45, 'n3': 51, 'n4': 51, 'n5': 51}"
+  },
+  {
+   "scenario": "partition",
+   "name": "after healing, all 5 nodes converge on one chain",
+   "passed": true,
+   "detail": "height 53"
+  },
+  {
+   "scenario": "partition",
+   "name": "every node on the LIGHTER side reorganized (and the heavier side did not)",
+   "passed": true,
+   "detail": "reorgs gained {'n1': 0, 'n2': 0, 'n3': 1, 'n4': 1, 'n5': 1}; lighter side ['n3', 'n4', 'n5']"
+  },
+  {
+   "scenario": "partition",
+   "name": "the surviving chain is the one with the most cumulative work",
+   "passed": true,
+   "detail": "final 489,427,467 vs max side 489,427,467"
+  },
+  {
+   "scenario": "late_joiner",
+   "name": "a wiped node performs a full initial sync from peers",
+   "passed": true,
+   "detail": "54+ blocks in 0.6s"
+  },
+  {
+   "scenario": "late_joiner",
+   "name": "and ends on exactly the same tip as everyone else",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "tx_flood",
+   "name": "the funding account has mined and matured enough to fund the flood (>= 400 MAI)",
+   "passed": true,
+   "detail": "400.0 MAI available"
+  },
+  {
+   "scenario": "tx_flood",
+   "name": "8 funding transactions confirm",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "tx_flood",
+   "name": "every submitted transaction was accepted by the node it was sent to",
+   "passed": true,
+   "detail": "168 ok, 0 rejected"
+  },
+  {
+   "scenario": "tx_flood",
+   "name": "all transactions are mined and every mempool drains",
+   "passed": true,
+   "detail": "{'n1': 0, 'n2': 0, 'n3': 0, 'n4': 0, 'n5': 0}"
+  },
+  {
+   "scenario": "tx_flood",
+   "name": "nodes agree on the chain after the flood",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "tx_flood",
+   "name": "every account balance is identical on all 5 nodes and equals the expected value",
+   "passed": true,
+   "detail": "[]"
+  },
+  {
+   "scenario": "attack",
+   "name": "the node greeted every attacker before rejecting it (each attack really reached the handshake)",
+   "passed": true,
+   "detail": "all greeted"
+  },
+  {
+   "scenario": "attack",
+   "name": "attack 'wrong network': connection is dropped",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "attack 'wrong genesis': connection is dropped",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "attack 'random bytes': connection is dropped",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "attack '50 MB length prefix': connection is dropped",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "attack 'HTTP request on the P2P port': connection is dropped",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "attack 'invalid-block spam #1': connection is dropped",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "attack 'invalid-block spam #2': connection is dropped",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "attack 'banned identity cannot reconnect': connection is dropped",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "attack 'ping flood (3000 messages)': connection is dropped",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "the abuse is visible in the target's metrics (penalty points and bans)",
+   "passed": true,
+   "detail": "+650 points, +6 bans"
+  },
+  {
+   "scenario": "attack",
+   "name": "the target node is still healthy and serving the API",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "the target keeps following the chain after the attack",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "attack",
+   "name": "all nodes still agree after the attack",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "corruption",
+   "name": "tampered balances are detected by `mineai check`",
+   "passed": true,
+   "detail": "CHECK FAILED: sum of balances differs from minted supply: database corrupted"
+  },
+  {
+   "scenario": "corruption",
+   "name": "the node REFUSES to start on a tampered database",
+   "passed": true,
+   "detail": "r(\"sum of balances differs from minted supply: database corrupted\")\nmineai.blockchain.ChainError: sum of balances differs from minted supply: database corrupted"
+  },
+  {
+   "scenario": "corruption",
+   "name": "physical corruption of the database file is detected",
+   "passed": true,
+   "detail": "CHECK FAILED: database is corrupted or not a MineAI database: database disk image is malformed"
+  },
+  {
+   "scenario": "corruption",
+   "name": "the node refuses to start on a corrupted database file",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "corruption",
+   "name": "after discarding the damaged database the node resyncs and converges",
+   "passed": true,
+   "detail": "height 60"
+  },
+  {
+   "scenario": "difficulty",
+   "name": "phase A: with a matching hashrate the block spacing is near the 5 s target (2.5 s - 12 s)",
+   "passed": true,
+   "detail": "mean 3.5 s"
+  },
+  {
+   "scenario": "difficulty",
+   "name": "phase B: blocks speed up right after hashrate rises (first third faster than 70% of target)",
+   "passed": true,
+   "detail": "2.08 s"
+  },
+  {
+   "scenario": "difficulty",
+   "name": "phase B: difficulty then climbs (last-third median >= 1.3x phase A's)",
+   "passed": true,
+   "detail": "15,387,747 -> 50,682,610"
+  },
+  {
+   "scenario": "difficulty",
+   "name": "phase B: block spacing recovers toward the target by the end (last third within 2 s - 12 s)",
+   "passed": true,
+   "detail": "4.17 s"
+  },
+  {
+   "scenario": "difficulty",
+   "name": "phase C: blocks slow down right after hashrate falls (first third slower than 1.5x target)",
+   "passed": true,
+   "detail": "12.33 s"
+  },
+  {
+   "scenario": "difficulty",
+   "name": "phase C: difficulty then falls (last-third median <= 0.9x phase B's)",
+   "passed": true,
+   "detail": "50,682,610 -> 29,804,686"
+  },
+  {
+   "scenario": "final",
+   "name": "network converges at the end",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "final",
+   "name": "offline full verification of n1's database (`mineai check`)",
+   "passed": true,
+   "detail": "OK: privnet database at C:\\Users\\USER\\AppData\\Local\\Temp\\mineai-privnet-d_by12wq\\n1\\privnet\\chain.db verified: height 150, total work 2973213572, minted supply 3750000000"
+  },
+  {
+   "scenario": "final",
+   "name": "offline full verification of n2's database (`mineai check`)",
+   "passed": true,
+   "detail": "OK: privnet database at C:\\Users\\USER\\AppData\\Local\\Temp\\mineai-privnet-d_by12wq\\n2\\privnet\\chain.db verified: height 150, total work 2973213572, minted supply 3750000000"
+  },
+  {
+   "scenario": "final",
+   "name": "offline full verification of n3's database (`mineai check`)",
+   "passed": true,
+   "detail": "OK: privnet database at C:\\Users\\USER\\AppData\\Local\\Temp\\mineai-privnet-d_by12wq\\n3\\privnet\\chain.db verified: height 150, total work 2973213572, minted supply 3750000000"
+  },
+  {
+   "scenario": "final",
+   "name": "offline full verification of n4's database (`mineai check`)",
+   "passed": true,
+   "detail": "OK: privnet database at C:\\Users\\USER\\AppData\\Local\\Temp\\mineai-privnet-d_by12wq\\n4\\privnet\\chain.db verified: height 150, total work 2973213572, minted supply 3750000000"
+  },
+  {
+   "scenario": "final",
+   "name": "offline full verification of n5's database (`mineai check`)",
+   "passed": true,
+   "detail": "OK: privnet database at C:\\Users\\USER\\AppData\\Local\\Temp\\mineai-privnet-d_by12wq\\n5\\privnet\\chain.db verified: height 150, total work 2973213572, minted supply 3750000000"
+  }
+ ],
+ "notes": {
+  "baseline_interval_mean": 2.89,
+  "baseline_interval_median": 1,
+  "baseline_reorgs": 1,
+  "partition_work_n1_vs_majority": [
+   489427467,
+   472011212
+  ],
+  "initial_sync_seconds": 0.6,
+  "initial_sync_blocks": 54,
+  "tx_flood_transactions": 168,
+  "difficulty_phases": [
+   {
+    "label": "A: 3 miners",
+    "miners": 3,
+    "blocks": 33,
+    "seconds": 120,
+    "interval_mean": 3.5,
+    "interval_first_third": 3.1,
+    "interval_last_third": 4.5,
+    "difficulty_start": 9659825,
+    "difficulty_end": 15668809,
+    "difficulty_last_third_median": 15387747
+   },
+   {
+    "label": "B: 10 miners (3.3x hashrate)",
+    "miners": 10,
+    "blocks": 37,
+    "seconds": 120,
+    "interval_mean": 3.17,
+    "interval_first_third": 2.08,
+    "interval_last_third": 4.17,
+    "difficulty_start": 15914078,
+    "difficulty_end": 62372480,
+    "difficulty_last_third_median": 50682610
+   },
+   {
+    "label": "C: 3 miners again (0.3x hashrate)",
+    "miners": 3,
+    "blocks": 20,
+    "seconds": 200,
+    "interval_mean": 9.26,
+    "interval_first_third": 12.33,
+    "interval_last_third": 9.33,
+    "difficulty_start": 62956504,
+    "difficulty_end": 30283434,
+    "difficulty_last_third_median": 29804686
+   }
+  ]
+ },
+ "timeline": [
+  [
+   0.0,
+   "[setup] begin"
+  ],
+  [
+   11.01468801498413,
+   "[setup] end (11s)"
+  ],
+  [
+   11.015688180923462,
+   "[baseline] begin"
+  ],
+  [
+   11.029406309127808,
+   "[baseline] 2 miners started on n1 and n3"
+  ],
+  [
+   86.56175780296326,
+   "[baseline] block interval mean 2.9s median 1.0s over 19 blocks"
+  ],
+  [
+   86.59138226509094,
+   "[baseline] reorganizations observed across nodes so far: 1"
+  ],
+  [
+   86.59138226509094,
+   "[baseline] end (76s)"
+  ],
+  [
+   86.59138226509094,
+   "[kill_recovery] begin"
+  ],
+  [
+   92.53441762924194,
+   "[kill_recovery] HARD-KILLED n4 at network height 27 (no graceful shutdown)"
+  ],
+  [
+   112.66923570632935,
+   "[kill_recovery] HARD-KILLED n2 at network height 34 (no graceful shutdown)"
+  ],
+  [
+   131.46993207931519,
+   "[kill_recovery] HARD-KILLED n5 at network height 39 (no graceful shutdown)"
+  ],
+  [
+   146.595312833786,
+   "[kill_recovery] end (60s)"
+  ],
+  [
+   146.595312833786,
+   "[rolling_restart] begin"
+  ],
+  [
+   150.58290028572083,
+   "[rolling_restart] restarted n2"
+  ],
+  [
+   154.41678023338318,
+   "[rolling_restart] restarted n3"
+  ],
+  [
+   158.37275385856628,
+   "[rolling_restart] restarted n4"
+  ],
+  [
+   162.2962362766266,
+   "[rolling_restart] restarted n5"
+  ],
+  [
+   172.8975899219513,
+   "[rolling_restart] end (26s)"
+  ],
+  [
+   172.8975899219513,
+   "[partition] begin"
+  ],
+  [
+   174.53612685203552,
+   "[partition] n1 and n2 isolated at height 45"
+  ],
+  [
+   220.07995104789734,
+   "[partition] before healing: n1 work 489,427,467 vs majority work 472,011,212 -> the isolated node is heavier"
+  ],
+  [
+   222.0592863559723,
+   "[partition] partition healed: n1 and n2 rejoined with P2P"
+  ],
+  [
+   222.11147499084473,
+   "[partition] final total work 489427467"
+  ],
+  [
+   222.11147499084473,
+   "[partition] end (49s)"
+  ],
+  [
+   222.11147499084473,
+   "[late_joiner] begin"
+  ],
+  [
+   232.4688835144043,
+   "[late_joiner] wiped n5's data directory (network height 54); starting it from nothing"
+  ],
+  [
+   233.33814692497253,
+   "[late_joiner] end (11s)"
+  ],
+  [
+   233.33814692497253,
+   "[tx_flood] begin"
+  ],
+  [
+   242.64972066879272,
+   "[tx_flood] funding transactions submitted; waiting for them to confirm"
+  ],
+  [
+   249.2554967403412,
+   "[tx_flood] submitted 160 transfers across 5 nodes (0 rejected at submission)"
+  ],
+  [
+   256.455929517746,
+   "[tx_flood] end (23s)"
+  ],
+  [
+   256.455929517746,
+   "[attack] begin"
+  ],
+  [
+   273.27719807624817,
+   "[attack] end (17s)"
+  ],
+  [
+   273.27719807624817,
+   "[corruption] begin"
+  ],
+  [
+   276.7313132286072,
+   "[corruption] end (3s)"
+  ],
+  [
+   276.7313132286072,
+   "[difficulty] begin"
+  ],
+  [
+   397.5753984451294,
+   "[difficulty] phase 'A: 3 miners': {'label': 'A: 3 miners', 'miners': 3, 'blocks': 33, 'seconds': 120, 'interval_mean': 3.5, 'interval_first_third': 3.1, 'interval_last_third': 4.5, 'difficulty_start': 9659825, 'difficulty_end': 15668809, 'difficulty_last_third_median': 15387747}"
+  ],
+  [
+   519.7900695800781,
+   "[difficulty] phase 'B: 10 miners (3.3x hashrate)': {'label': 'B: 10 miners (3.3x hashrate)', 'miners': 10, 'blocks': 37, 'seconds': 120, 'interval_mean': 3.17, 'interval_first_third': 2.08, 'interval_last_third': 4.17, 'difficulty_start': 15914078, 'difficulty_end': 62372480, 'difficulty_last_third_median': 50682610}"
+  ],
+  [
+   720.9335355758667,
+   "[difficulty] phase 'C: 3 miners again (0.3x hashrate)': {'label': 'C: 3 miners again (0.3x hashrate)', 'miners': 3, 'blocks': 20, 'seconds': 200, 'interval_mean': 9.26, 'interval_first_third': 12.33, 'interval_last_third': 9.33, 'difficulty_start': 62956504, 'difficulty_end': 30283434, 'difficulty_last_third_median': 29804686}"
+  ],
+  [
+   720.9335355758667,
+   "[difficulty] end (444s)"
+  ],
+  [
+   720.9335355758667,
+   "[final] begin"
+  ],
+  [
+   725.646940946579,
+   "[final] end (5s)"
+  ]
+ ],
+ "snapshots": [
+  {
+   "t": 12.0,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 3,
+     "tip": "00024b7b5632",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16384,
+     "reorgs": 1,
+     "work": "49152",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 3,
+     "tip": "00024b7b5632",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16384,
+     "reorgs": 0,
+     "work": "49152",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 3,
+     "tip": "00024b7b5632",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16384,
+     "reorgs": 0,
+     "work": "49152",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 3,
+     "tip": "00024b7b5632",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16384,
+     "reorgs": 0,
+     "work": "49152",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 3,
+     "tip": "00024b7b5632",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16384,
+     "reorgs": 0,
+     "work": "49152",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 17.1,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 12,
+     "tip": "0000021eb14e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 1995336,
+     "reorgs": 1,
+     "work": "3258074",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 12,
+     "tip": "0000021eb14e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 1995336,
+     "reorgs": 0,
+     "work": "3258074",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 12,
+     "tip": "0000021eb14e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 1995336,
+     "reorgs": 0,
+     "work": "3258074",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 12,
+     "tip": "0000021eb14e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 1995336,
+     "reorgs": 0,
+     "work": "3258074",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 12,
+     "tip": "0000021eb14e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 1995336,
+     "reorgs": 0,
+     "work": "3258074",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 22.3,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 13,
+     "tip": "000000154631",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 2882152,
+     "reorgs": 1,
+     "work": "5253410",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 13,
+     "tip": "000000154631",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 2882152,
+     "reorgs": 0,
+     "work": "5253410",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 13,
+     "tip": "000000154631",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 2882152,
+     "reorgs": 0,
+     "work": "5253410",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 13,
+     "tip": "000000154631",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 2882152,
+     "reorgs": 0,
+     "work": "5253410",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 13,
+     "tip": "000000154631",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 2882152,
+     "reorgs": 0,
+     "work": "5253410",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 27.4,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 15,
+     "tip": "0000040ddb7d",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 5502290,
+     "reorgs": 1,
+     "work": "12170575",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 15,
+     "tip": "0000040ddb7d",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 5502290,
+     "reorgs": 0,
+     "work": "12170575",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 15,
+     "tip": "0000040ddb7d",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 5502290,
+     "reorgs": 0,
+     "work": "12170575",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 15,
+     "tip": "0000040ddb7d",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 5502290,
+     "reorgs": 0,
+     "work": "12170575",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 15,
+     "tip": "0000040ddb7d",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 5502290,
+     "reorgs": 0,
+     "work": "12170575",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 32.5,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 17,
+     "tip": "00000093fbaf",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9593736,
+     "reorgs": 1,
+     "work": "25009252",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 17,
+     "tip": "00000093fbaf",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9593736,
+     "reorgs": 0,
+     "work": "25009252",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 17,
+     "tip": "00000093fbaf",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9593736,
+     "reorgs": 0,
+     "work": "25009252",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 17,
+     "tip": "00000093fbaf",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9593736,
+     "reorgs": 0,
+     "work": "25009252",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 17,
+     "tip": "00000093fbaf",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9593736,
+     "reorgs": 0,
+     "work": "25009252",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 37.7,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 21,
+     "tip": "0000007cf3f7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13516167,
+     "reorgs": 1,
+     "work": "75756072",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 21,
+     "tip": "0000007cf3f7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13516167,
+     "reorgs": 0,
+     "work": "75756072",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 21,
+     "tip": "0000007cf3f7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13516167,
+     "reorgs": 0,
+     "work": "75756072",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 21,
+     "tip": "0000007cf3f7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13516167,
+     "reorgs": 0,
+     "work": "75756072",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 21,
+     "tip": "0000007cf3f7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13516167,
+     "reorgs": 0,
+     "work": "75756072",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 42.8,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 22,
+     "tip": "0000002db8dc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15693771,
+     "reorgs": 1,
+     "work": "89272239",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 22,
+     "tip": "0000002db8dc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15693771,
+     "reorgs": 0,
+     "work": "89272239",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 22,
+     "tip": "0000002db8dc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15693771,
+     "reorgs": 0,
+     "work": "89272239",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 22,
+     "tip": "0000002db8dc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15693771,
+     "reorgs": 0,
+     "work": "89272239",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 22,
+     "tip": "0000002db8dc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15693771,
+     "reorgs": 0,
+     "work": "89272239",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 47.9,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 22,
+     "tip": "0000002db8dc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15693771,
+     "reorgs": 1,
+     "work": "89272239",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 22,
+     "tip": "0000002db8dc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15693771,
+     "reorgs": 0,
+     "work": "89272239",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 22,
+     "tip": "0000002db8dc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15693771,
+     "reorgs": 0,
+     "work": "89272239",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 22,
+     "tip": "0000002db8dc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15693771,
+     "reorgs": 0,
+     "work": "89272239",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 22,
+     "tip": "0000002db8dc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15693771,
+     "reorgs": 0,
+     "work": "89272239",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 53.0,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 1,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 58.2,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 1,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 63.3,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 1,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 23,
+     "tip": "000000ec61f6",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 18148870,
+     "reorgs": 0,
+     "work": "104966010",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 68.4,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 24,
+     "tip": "000000c32009",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 20906441,
+     "reorgs": 1,
+     "work": "123114880",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 24,
+     "tip": "000000c32009",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 20906441,
+     "reorgs": 0,
+     "work": "123114880",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 24,
+     "tip": "000000c32009",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 20906441,
+     "reorgs": 0,
+     "work": "123114880",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 24,
+     "tip": "000000c32009",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 20906441,
+     "reorgs": 0,
+     "work": "123114880",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 24,
+     "tip": "000000c32009",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 20906441,
+     "reorgs": 0,
+     "work": "123114880",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 73.6,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 24,
+     "tip": "000000c32009",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 20906441,
+     "reorgs": 1,
+     "work": "123114880",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 24,
+     "tip": "000000c32009",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 20906441,
+     "reorgs": 0,
+     "work": "123114880",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 24,
+     "tip": "000000c32009",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 20906441,
+     "reorgs": 0,
+     "work": "123114880",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 24,
+     "tip": "000000c32009",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 20906441,
+     "reorgs": 0,
+     "work": "123114880",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 24,
+     "tip": "000000c32009",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 20906441,
+     "reorgs": 0,
+     "work": "123114880",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 78.7,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 25,
+     "tip": "000000442452",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 21283785,
+     "reorgs": 1,
+     "work": "144021321",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 25,
+     "tip": "000000442452",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 21283785,
+     "reorgs": 0,
+     "work": "144021321",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 25,
+     "tip": "000000442452",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 21283785,
+     "reorgs": 0,
+     "work": "144021321",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 25,
+     "tip": "000000442452",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 21283785,
+     "reorgs": 0,
+     "work": "144021321",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 25,
+     "tip": "000000442452",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 21283785,
+     "reorgs": 0,
+     "work": "144021321",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 83.8,
+   "scenario": "baseline",
+   "nodes": {
+    "n1": {
+     "height": 25,
+     "tip": "000000442452",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 21283785,
+     "reorgs": 1,
+     "work": "144021321",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 25,
+     "tip": "000000442452",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 21283785,
+     "reorgs": 0,
+     "work": "144021321",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 25,
+     "tip": "000000442452",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 21283785,
+     "reorgs": 0,
+     "work": "144021321",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 25,
+     "tip": "000000442452",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 21283785,
+     "reorgs": 0,
+     "work": "144021321",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 25,
+     "tip": "000000442452",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 21283785,
+     "reorgs": 0,
+     "work": "144021321",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 89.0,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 26,
+     "tip": "000000c1ba52",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16049451,
+     "reorgs": 1,
+     "work": "165305106",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 26,
+     "tip": "000000c1ba52",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16049451,
+     "reorgs": 0,
+     "work": "165305106",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 26,
+     "tip": "000000c1ba52",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16049451,
+     "reorgs": 0,
+     "work": "165305106",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 26,
+     "tip": "000000c1ba52",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16049451,
+     "reorgs": 0,
+     "work": "165305106",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 26,
+     "tip": "000000c1ba52",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16049451,
+     "reorgs": 0,
+     "work": "165305106",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 94.1,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 29,
+     "tip": "00000121280b",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 8761641,
+     "reorgs": 1,
+     "work": "200774530",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 29,
+     "tip": "00000121280b",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 8761641,
+     "reorgs": 0,
+     "work": "200774530",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 29,
+     "tip": "00000121280b",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 8761641,
+     "reorgs": 0,
+     "work": "200774530",
+     "sync": "synced"
+    },
+    "n4": null,
+    "n5": {
+     "height": 29,
+     "tip": "00000121280b",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 8761641,
+     "reorgs": 0,
+     "work": "200774530",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 99.2,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 31,
+     "tip": "00000014baf5",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 9595084,
+     "reorgs": 1,
+     "work": "218559315",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 31,
+     "tip": "00000014baf5",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 9595084,
+     "reorgs": 0,
+     "work": "218559315",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 31,
+     "tip": "00000014baf5",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 9595084,
+     "reorgs": 0,
+     "work": "218559315",
+     "sync": "synced"
+    },
+    "n4": null,
+    "n5": {
+     "height": 31,
+     "tip": "00000014baf5",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 9595084,
+     "reorgs": 0,
+     "work": "218559315",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 104.4,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 32,
+     "tip": "0000016e2c01",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10195094,
+     "reorgs": 1,
+     "work": "228154399",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 32,
+     "tip": "0000016e2c01",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10195094,
+     "reorgs": 0,
+     "work": "228154399",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 32,
+     "tip": "0000016e2c01",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10195094,
+     "reorgs": 0,
+     "work": "228154399",
+     "sync": "synced"
+    },
+    "n4": null,
+    "n5": {
+     "height": 32,
+     "tip": "0000016e2c01",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10195094,
+     "reorgs": 0,
+     "work": "228154399",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 109.5,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 1,
+     "work": "248806659",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 0,
+     "work": "248806659",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 0,
+     "work": "248806659",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 0,
+     "work": "248806659",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 0,
+     "work": "248806659",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 114.6,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 1,
+     "work": "248806659",
+     "sync": "synced"
+    },
+    "n2": null,
+    "n3": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 0,
+     "work": "248806659",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 0,
+     "work": "248806659",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 0,
+     "work": "248806659",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 119.7,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 1,
+     "work": "248806659",
+     "sync": "synced"
+    },
+    "n2": null,
+    "n3": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 0,
+     "work": "248806659",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 0,
+     "work": "248806659",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 34,
+     "tip": "000000fb501a",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 10897364,
+     "reorgs": 0,
+     "work": "248806659",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 124.9,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 39,
+     "tip": "0000010bd9a7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11674943,
+     "reorgs": 1,
+     "work": "306532286",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 39,
+     "tip": "0000010bd9a7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11674943,
+     "reorgs": 0,
+     "work": "306532286",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 39,
+     "tip": "0000010bd9a7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11674943,
+     "reorgs": 0,
+     "work": "306532286",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 39,
+     "tip": "0000010bd9a7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11674943,
+     "reorgs": 0,
+     "work": "306532286",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 39,
+     "tip": "0000010bd9a7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11674943,
+     "reorgs": 0,
+     "work": "306532286",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 130.0,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 39,
+     "tip": "0000010bd9a7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11674943,
+     "reorgs": 1,
+     "work": "306532286",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 39,
+     "tip": "0000010bd9a7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11674943,
+     "reorgs": 0,
+     "work": "306532286",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 39,
+     "tip": "0000010bd9a7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11674943,
+     "reorgs": 0,
+     "work": "306532286",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 39,
+     "tip": "0000010bd9a7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11674943,
+     "reorgs": 0,
+     "work": "306532286",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 39,
+     "tip": "0000010bd9a7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11674943,
+     "reorgs": 0,
+     "work": "306532286",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 135.2,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 40,
+     "tip": "000000c558f7",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 12545817,
+     "reorgs": 1,
+     "work": "318207229",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 40,
+     "tip": "000000c558f7",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 12545817,
+     "reorgs": 0,
+     "work": "318207229",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 40,
+     "tip": "000000c558f7",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 12545817,
+     "reorgs": 0,
+     "work": "318207229",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 40,
+     "tip": "000000c558f7",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 12545817,
+     "reorgs": 0,
+     "work": "318207229",
+     "sync": "synced"
+    },
+    "n5": null
+   }
+  },
+  {
+   "t": 140.3,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 41,
+     "tip": "0000013eef82",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 13519338,
+     "reorgs": 1,
+     "work": "330753046",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 41,
+     "tip": "0000013eef82",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 13519338,
+     "reorgs": 0,
+     "work": "330753046",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 41,
+     "tip": "0000013eef82",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 13519338,
+     "reorgs": 0,
+     "work": "330753046",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 41,
+     "tip": "0000013eef82",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 13519338,
+     "reorgs": 0,
+     "work": "330753046",
+     "sync": "synced"
+    },
+    "n5": null
+   }
+  },
+  {
+   "t": 145.4,
+   "scenario": "kill_recovery",
+   "nodes": {
+    "n1": {
+     "height": 42,
+     "tip": "0000000636df",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 14650005,
+     "reorgs": 1,
+     "work": "344272384",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 42,
+     "tip": "0000000636df",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 14650005,
+     "reorgs": 0,
+     "work": "344272384",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 42,
+     "tip": "0000000636df",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 14650005,
+     "reorgs": 0,
+     "work": "344272384",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 42,
+     "tip": "0000000636df",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 14650005,
+     "reorgs": 0,
+     "work": "344272384",
+     "sync": "synced"
+    },
+    "n5": null
+   }
+  },
+  {
+   "t": 150.6,
+   "scenario": "rolling_restart",
+   "nodes": {
+    "n1": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 1,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 155.7,
+   "scenario": "rolling_restart",
+   "nodes": {
+    "n1": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 1,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 160.9,
+   "scenario": "rolling_restart",
+   "nodes": {
+    "n1": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 1,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 166.5,
+   "scenario": "rolling_restart",
+   "nodes": {
+    "n1": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 1,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 43,
+     "tip": "000000ecae66",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14380559,
+     "reorgs": 0,
+     "work": "358922389",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 171.6,
+   "scenario": "rolling_restart",
+   "nodes": {
+    "n1": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 1,
+     "work": "387250938",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 177.8,
+   "scenario": "partition",
+   "nodes": {
+    "n1": {
+     "height": 46,
+     "tip": "00000114e7a9",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 14765643,
+     "reorgs": 0,
+     "work": "401008026",
+     "sync": "p2p_disabled"
+    },
+    "n2": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "p2p_disabled"
+    },
+    "n3": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 182.9,
+   "scenario": "partition",
+   "nodes": {
+    "n1": {
+     "height": 46,
+     "tip": "00000114e7a9",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 14765643,
+     "reorgs": 0,
+     "work": "401008026",
+     "sync": "p2p_disabled"
+    },
+    "n2": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "p2p_disabled"
+    },
+    "n3": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 188.0,
+   "scenario": "partition",
+   "nodes": {
+    "n1": {
+     "height": 48,
+     "tip": "000001375126",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 11965078,
+     "reorgs": 0,
+     "work": "427829497",
+     "sync": "p2p_disabled"
+    },
+    "n2": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "p2p_disabled"
+    },
+    "n3": {
+     "height": 46,
+     "tip": "0000005f3ca9",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 14765643,
+     "reorgs": 0,
+     "work": "401008026",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 46,
+     "tip": "0000005f3ca9",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 14765643,
+     "reorgs": 0,
+     "work": "401008026",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 46,
+     "tip": "0000005f3ca9",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 14765643,
+     "reorgs": 0,
+     "work": "401008026",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 193.1,
+   "scenario": "partition",
+   "nodes": {
+    "n1": {
+     "height": 50,
+     "tip": "000000c3f869",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 12091667,
+     "reorgs": 0,
+     "work": "452375416",
+     "sync": "p2p_disabled"
+    },
+    "n2": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "p2p_disabled"
+    },
+    "n3": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 198.2,
+   "scenario": "partition",
+   "nodes": {
+    "n1": {
+     "height": 50,
+     "tip": "000000c3f869",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 12091667,
+     "reorgs": 0,
+     "work": "452375416",
+     "sync": "p2p_disabled"
+    },
+    "n2": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "p2p_disabled"
+    },
+    "n3": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 203.4,
+   "scenario": "partition",
+   "nodes": {
+    "n1": {
+     "height": 51,
+     "tip": "00000061e1f4",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 12417602,
+     "reorgs": 0,
+     "work": "464467083",
+     "sync": "p2p_disabled"
+    },
+    "n2": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "p2p_disabled"
+    },
+    "n3": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 208.5,
+   "scenario": "partition",
+   "nodes": {
+    "n1": {
+     "height": 52,
+     "tip": "00000022e1a4",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 12542782,
+     "reorgs": 0,
+     "work": "476884685",
+     "sync": "p2p_disabled"
+    },
+    "n2": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "p2p_disabled"
+    },
+    "n3": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 47,
+     "tip": "000000061b7e",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12055828,
+     "reorgs": 0,
+     "work": "415773669",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 213.6,
+   "scenario": "partition",
+   "nodes": {
+    "n1": {
+     "height": 53,
+     "tip": "000000a35fd2",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13120106,
+     "reorgs": 0,
+     "work": "489427467",
+     "sync": "p2p_disabled"
+    },
+    "n2": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "p2p_disabled"
+    },
+    "n3": {
+     "height": 48,
+     "tip": "00000077d3e8",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 11965078,
+     "reorgs": 0,
+     "work": "427829497",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 48,
+     "tip": "00000077d3e8",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 11965078,
+     "reorgs": 0,
+     "work": "427829497",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 48,
+     "tip": "00000077d3e8",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 11965078,
+     "reorgs": 0,
+     "work": "427829497",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 218.7,
+   "scenario": "partition",
+   "nodes": {
+    "n1": {
+     "height": 53,
+     "tip": "000000a35fd2",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13120106,
+     "reorgs": 0,
+     "work": "489427467",
+     "sync": "p2p_disabled"
+    },
+    "n2": {
+     "height": 45,
+     "tip": "000000a2a03f",
+     "peers": 0,
+     "mempool": 0,
+     "difficulty": 13757088,
+     "reorgs": 0,
+     "work": "387250938",
+     "sync": "p2p_disabled"
+    },
+    "n3": {
+     "height": 51,
+     "tip": "0000006305f8",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 9479788,
+     "reorgs": 0,
+     "work": "462531424",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 51,
+     "tip": "0000006305f8",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 9479788,
+     "reorgs": 0,
+     "work": "462531424",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 51,
+     "tip": "0000006305f8",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 9479788,
+     "reorgs": 0,
+     "work": "462531424",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 224.4,
+   "scenario": "late_joiner",
+   "nodes": {
+    "n1": {
+     "height": 53,
+     "tip": "000000a35fd2",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13120106,
+     "reorgs": 0,
+     "work": "489427467",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 53,
+     "tip": "000000a35fd2",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13120106,
+     "reorgs": 0,
+     "work": "489427467",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 53,
+     "tip": "000000a35fd2",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13120106,
+     "reorgs": 1,
+     "work": "489427467",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 53,
+     "tip": "000000a35fd2",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13120106,
+     "reorgs": 1,
+     "work": "489427467",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 53,
+     "tip": "000000a35fd2",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13120106,
+     "reorgs": 1,
+     "work": "489427467",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 229.5,
+   "scenario": "late_joiner",
+   "nodes": {
+    "n1": {
+     "height": 54,
+     "tip": "000001358b73",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12314084,
+     "reorgs": 0,
+     "work": "502547573",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 54,
+     "tip": "000001358b73",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12314084,
+     "reorgs": 0,
+     "work": "502547573",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 54,
+     "tip": "000001358b73",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12314084,
+     "reorgs": 1,
+     "work": "502547573",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 54,
+     "tip": "000001358b73",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12314084,
+     "reorgs": 1,
+     "work": "502547573",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 54,
+     "tip": "000001358b73",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12314084,
+     "reorgs": 1,
+     "work": "502547573",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 235.1,
+   "scenario": "tx_flood",
+   "nodes": {
+    "n1": {
+     "height": 54,
+     "tip": "000001358b73",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 12314084,
+     "reorgs": 0,
+     "work": "502547573",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 54,
+     "tip": "000001358b73",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 12314084,
+     "reorgs": 0,
+     "work": "502547573",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 54,
+     "tip": "000001358b73",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12314084,
+     "reorgs": 1,
+     "work": "502547573",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 54,
+     "tip": "000001358b73",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12314084,
+     "reorgs": 1,
+     "work": "502547573",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 54,
+     "tip": "000001358b73",
+     "peers": 2,
+     "mempool": 0,
+     "difficulty": 12314084,
+     "reorgs": 0,
+     "work": "502547573",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 240.3,
+   "scenario": "tx_flood",
+   "nodes": {
+    "n1": {
+     "height": 55,
+     "tip": "0000002dd6fb",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11802926,
+     "reorgs": 0,
+     "work": "514861657",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 55,
+     "tip": "0000002dd6fb",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11802926,
+     "reorgs": 0,
+     "work": "514861657",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 55,
+     "tip": "0000002dd6fb",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11802926,
+     "reorgs": 1,
+     "work": "514861657",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 55,
+     "tip": "0000002dd6fb",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11802926,
+     "reorgs": 1,
+     "work": "514861657",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 55,
+     "tip": "0000002dd6fb",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11802926,
+     "reorgs": 0,
+     "work": "514861657",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 245.4,
+   "scenario": "tx_flood",
+   "nodes": {
+    "n1": {
+     "height": 56,
+     "tip": "0000007920a3",
+     "peers": 4,
+     "mempool": 8,
+     "difficulty": 10187471,
+     "reorgs": 0,
+     "work": "526664583",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 56,
+     "tip": "0000007920a3",
+     "peers": 4,
+     "mempool": 8,
+     "difficulty": 10187471,
+     "reorgs": 0,
+     "work": "526664583",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 56,
+     "tip": "0000007920a3",
+     "peers": 4,
+     "mempool": 8,
+     "difficulty": 10187471,
+     "reorgs": 1,
+     "work": "526664583",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 56,
+     "tip": "0000007920a3",
+     "peers": 4,
+     "mempool": 8,
+     "difficulty": 10187471,
+     "reorgs": 1,
+     "work": "526664583",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 56,
+     "tip": "0000007920a3",
+     "peers": 4,
+     "mempool": 8,
+     "difficulty": 10187471,
+     "reorgs": 0,
+     "work": "526664583",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 250.6,
+   "scenario": "tx_flood",
+   "nodes": {
+    "n1": {
+     "height": 57,
+     "tip": "0000018ccdad",
+     "peers": 4,
+     "mempool": 160,
+     "difficulty": 9477487,
+     "reorgs": 0,
+     "work": "536852054",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 57,
+     "tip": "0000018ccdad",
+     "peers": 4,
+     "mempool": 160,
+     "difficulty": 9477487,
+     "reorgs": 0,
+     "work": "536852054",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 57,
+     "tip": "0000018ccdad",
+     "peers": 4,
+     "mempool": 160,
+     "difficulty": 9477487,
+     "reorgs": 1,
+     "work": "536852054",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 57,
+     "tip": "0000018ccdad",
+     "peers": 4,
+     "mempool": 160,
+     "difficulty": 9477487,
+     "reorgs": 1,
+     "work": "536852054",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 57,
+     "tip": "0000018ccdad",
+     "peers": 4,
+     "mempool": 160,
+     "difficulty": 9477487,
+     "reorgs": 0,
+     "work": "536852054",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 255.7,
+   "scenario": "tx_flood",
+   "nodes": {
+    "n1": {
+     "height": 58,
+     "tip": "0000015dbc9b",
+     "peers": 4,
+     "mempool": 160,
+     "difficulty": 9688445,
+     "reorgs": 0,
+     "work": "546329541",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 58,
+     "tip": "0000015dbc9b",
+     "peers": 4,
+     "mempool": 160,
+     "difficulty": 9688445,
+     "reorgs": 0,
+     "work": "546329541",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 58,
+     "tip": "0000015dbc9b",
+     "peers": 4,
+     "mempool": 160,
+     "difficulty": 9688445,
+     "reorgs": 1,
+     "work": "546329541",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 58,
+     "tip": "0000015dbc9b",
+     "peers": 4,
+     "mempool": 160,
+     "difficulty": 9688445,
+     "reorgs": 1,
+     "work": "546329541",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 58,
+     "tip": "0000015dbc9b",
+     "peers": 4,
+     "mempool": 160,
+     "difficulty": 9688445,
+     "reorgs": 0,
+     "work": "546329541",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 260.9,
+   "scenario": "attack",
+   "nodes": {
+    "n1": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 0,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 0,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 1,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 1,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 0,
+     "work": "556017986",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 266.0,
+   "scenario": "attack",
+   "nodes": {
+    "n1": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 0,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 0,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 1,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 1,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 0,
+     "work": "556017986",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 271.2,
+   "scenario": "attack",
+   "nodes": {
+    "n1": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 0,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 0,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 1,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 1,
+     "work": "556017986",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 59,
+     "tip": "0000007de8d1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9622987,
+     "reorgs": 0,
+     "work": "556017986",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 276.4,
+   "scenario": "corruption",
+   "nodes": {
+    "n1": {
+     "height": 60,
+     "tip": "000000692b39",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 9659825,
+     "reorgs": 0,
+     "work": "565640973",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 60,
+     "tip": "000000692b39",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 9659825,
+     "reorgs": 0,
+     "work": "565640973",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 60,
+     "tip": "000000692b39",
+     "peers": 1,
+     "mempool": 0,
+     "difficulty": 9659825,
+     "reorgs": 0,
+     "work": "565640973",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 60,
+     "tip": "000000692b39",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 9659825,
+     "reorgs": 1,
+     "work": "565640973",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 60,
+     "tip": "000000692b39",
+     "peers": 3,
+     "mempool": 0,
+     "difficulty": 9659825,
+     "reorgs": 0,
+     "work": "565640973",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 282.0,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 63,
+     "tip": "000001100d04",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 8506912,
+     "reorgs": 0,
+     "work": "594432367",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 63,
+     "tip": "000001100d04",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 8506912,
+     "reorgs": 0,
+     "work": "594432367",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 63,
+     "tip": "000001100d04",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 8506912,
+     "reorgs": 0,
+     "work": "594432367",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 63,
+     "tip": "000001100d04",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 8506912,
+     "reorgs": 1,
+     "work": "594432367",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 63,
+     "tip": "000001100d04",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 8506912,
+     "reorgs": 0,
+     "work": "594432367",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 287.1,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 66,
+     "tip": "0000012fb219",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9693251,
+     "reorgs": 0,
+     "work": "621075703",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 66,
+     "tip": "0000012fb219",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9693251,
+     "reorgs": 0,
+     "work": "621075703",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 66,
+     "tip": "0000012fb219",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9693251,
+     "reorgs": 0,
+     "work": "621075703",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 66,
+     "tip": "0000012fb219",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9693251,
+     "reorgs": 1,
+     "work": "621075703",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 66,
+     "tip": "0000012fb219",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 9693251,
+     "reorgs": 0,
+     "work": "621075703",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 292.3,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 68,
+     "tip": "000000499674",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10430857,
+     "reorgs": 0,
+     "work": "640708987",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 68,
+     "tip": "000000499674",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10430857,
+     "reorgs": 0,
+     "work": "640708987",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 68,
+     "tip": "000000499674",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10430857,
+     "reorgs": 0,
+     "work": "640708987",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 68,
+     "tip": "000000499674",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10430857,
+     "reorgs": 1,
+     "work": "640708987",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 68,
+     "tip": "000000499674",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10430857,
+     "reorgs": 0,
+     "work": "640708987",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 297.5,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 68,
+     "tip": "000000499674",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10430857,
+     "reorgs": 0,
+     "work": "640708987",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 68,
+     "tip": "000000499674",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10430857,
+     "reorgs": 0,
+     "work": "640708987",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 68,
+     "tip": "000000499674",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10430857,
+     "reorgs": 0,
+     "work": "640708987",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 68,
+     "tip": "000000499674",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10430857,
+     "reorgs": 1,
+     "work": "640708987",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 68,
+     "tip": "000000499674",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10430857,
+     "reorgs": 0,
+     "work": "640708987",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 302.7,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 69,
+     "tip": "0000015923b1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10986049,
+     "reorgs": 0,
+     "work": "651139844",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 69,
+     "tip": "0000015923b1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10986049,
+     "reorgs": 0,
+     "work": "651139844",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 69,
+     "tip": "0000015923b1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10986049,
+     "reorgs": 0,
+     "work": "651139844",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 69,
+     "tip": "0000015923b1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10986049,
+     "reorgs": 1,
+     "work": "651139844",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 69,
+     "tip": "0000015923b1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10986049,
+     "reorgs": 0,
+     "work": "651139844",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 307.8,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 70,
+     "tip": "00000058fb2e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11147510,
+     "reorgs": 0,
+     "work": "662125893",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 70,
+     "tip": "00000058fb2e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11147510,
+     "reorgs": 0,
+     "work": "662125893",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 70,
+     "tip": "00000058fb2e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11147510,
+     "reorgs": 0,
+     "work": "662125893",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 70,
+     "tip": "00000058fb2e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11147510,
+     "reorgs": 1,
+     "work": "662125893",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 70,
+     "tip": "00000058fb2e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 11147510,
+     "reorgs": 0,
+     "work": "662125893",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 312.9,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 73,
+     "tip": "00000100b0d4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10661497,
+     "reorgs": 0,
+     "work": "695688139",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 73,
+     "tip": "00000100b0d4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10661497,
+     "reorgs": 0,
+     "work": "695688139",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 73,
+     "tip": "00000100b0d4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10661497,
+     "reorgs": 0,
+     "work": "695688139",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 73,
+     "tip": "00000100b0d4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10661497,
+     "reorgs": 1,
+     "work": "695688139",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 73,
+     "tip": "00000100b0d4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10661497,
+     "reorgs": 0,
+     "work": "695688139",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 318.1,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 73,
+     "tip": "00000100b0d4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10661497,
+     "reorgs": 0,
+     "work": "695688139",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 73,
+     "tip": "00000100b0d4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10661497,
+     "reorgs": 0,
+     "work": "695688139",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 73,
+     "tip": "00000100b0d4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10661497,
+     "reorgs": 0,
+     "work": "695688139",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 73,
+     "tip": "00000100b0d4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10661497,
+     "reorgs": 1,
+     "work": "695688139",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 73,
+     "tip": "00000100b0d4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 10661497,
+     "reorgs": 0,
+     "work": "695688139",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 323.2,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 76,
+     "tip": "0000003a4d17",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12171566,
+     "reorgs": 0,
+     "work": "728933591",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 76,
+     "tip": "0000003a4d17",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12171566,
+     "reorgs": 0,
+     "work": "728933591",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 76,
+     "tip": "0000003a4d17",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12171566,
+     "reorgs": 0,
+     "work": "728933591",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 76,
+     "tip": "0000003a4d17",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12171566,
+     "reorgs": 1,
+     "work": "728933591",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 76,
+     "tip": "0000003a4d17",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12171566,
+     "reorgs": 0,
+     "work": "728933591",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 328.4,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 78,
+     "tip": "0000006fa856",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12165539,
+     "reorgs": 0,
+     "work": "752767132",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 78,
+     "tip": "0000006fa856",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12165539,
+     "reorgs": 0,
+     "work": "752767132",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 78,
+     "tip": "0000006fa856",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12165539,
+     "reorgs": 0,
+     "work": "752767132",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 78,
+     "tip": "0000006fa856",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12165539,
+     "reorgs": 1,
+     "work": "752767132",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 78,
+     "tip": "0000006fa856",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 12165539,
+     "reorgs": 0,
+     "work": "752767132",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 333.6,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 80,
+     "tip": "0000000bd5d5",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13753341,
+     "reorgs": 0,
+     "work": "777841586",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 80,
+     "tip": "0000000bd5d5",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13753341,
+     "reorgs": 0,
+     "work": "777841586",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 80,
+     "tip": "0000000bd5d5",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13753341,
+     "reorgs": 0,
+     "work": "777841586",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 80,
+     "tip": "0000000bd5d5",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13753341,
+     "reorgs": 1,
+     "work": "777841586",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 80,
+     "tip": "0000000bd5d5",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13753341,
+     "reorgs": 0,
+     "work": "777841586",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 338.8,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 80,
+     "tip": "0000000bd5d5",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13753341,
+     "reorgs": 0,
+     "work": "777841586",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 80,
+     "tip": "0000000bd5d5",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13753341,
+     "reorgs": 0,
+     "work": "777841586",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 80,
+     "tip": "0000000bd5d5",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13753341,
+     "reorgs": 0,
+     "work": "777841586",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 80,
+     "tip": "0000000bd5d5",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13753341,
+     "reorgs": 1,
+     "work": "777841586",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 80,
+     "tip": "0000000bd5d5",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13753341,
+     "reorgs": 0,
+     "work": "777841586",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 343.9,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 82,
+     "tip": "000000117a59",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14991419,
+     "reorgs": 0,
+     "work": "806309034",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 82,
+     "tip": "000000117a59",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14991419,
+     "reorgs": 0,
+     "work": "806309034",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 82,
+     "tip": "000000117a59",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14991419,
+     "reorgs": 0,
+     "work": "806309034",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 82,
+     "tip": "000000117a59",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14991419,
+     "reorgs": 1,
+     "work": "806309034",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 82,
+     "tip": "000000117a59",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14991419,
+     "reorgs": 0,
+     "work": "806309034",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 349.1,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 1,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 354.2,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 1,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 359.4,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 1,
+     "work": "821300453",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 83,
+     "tip": "0000001cd8e1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16145735,
+     "reorgs": 0,
+     "work": "821300453",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 364.6,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 85,
+     "tip": "000000a86911",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15358693,
+     "reorgs": 0,
+     "work": "851762041",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 85,
+     "tip": "000000a86911",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15358693,
+     "reorgs": 0,
+     "work": "851762041",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 85,
+     "tip": "000000a86911",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15358693,
+     "reorgs": 0,
+     "work": "851762041",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 85,
+     "tip": "000000a86911",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15358693,
+     "reorgs": 1,
+     "work": "851762041",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 85,
+     "tip": "000000a86911",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15358693,
+     "reorgs": 0,
+     "work": "851762041",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 369.7,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 88,
+     "tip": "00000072bfca",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13995687,
+     "reorgs": 0,
+     "work": "896853802",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 88,
+     "tip": "00000072bfca",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13995687,
+     "reorgs": 0,
+     "work": "896853802",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 88,
+     "tip": "00000072bfca",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13995687,
+     "reorgs": 0,
+     "work": "896853802",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 88,
+     "tip": "00000072bfca",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13995687,
+     "reorgs": 1,
+     "work": "896853802",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 88,
+     "tip": "00000072bfca",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13995687,
+     "reorgs": 0,
+     "work": "896853802",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 375.0,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 88,
+     "tip": "00000072bfca",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13995687,
+     "reorgs": 0,
+     "work": "896853802",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 88,
+     "tip": "00000072bfca",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13995687,
+     "reorgs": 0,
+     "work": "896853802",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 88,
+     "tip": "00000072bfca",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13995687,
+     "reorgs": 0,
+     "work": "896853802",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 88,
+     "tip": "00000072bfca",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13995687,
+     "reorgs": 1,
+     "work": "896853802",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 88,
+     "tip": "00000072bfca",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 13995687,
+     "reorgs": 0,
+     "work": "896853802",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 380.2,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 89,
+     "tip": "00000066a8ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14450573,
+     "reorgs": 0,
+     "work": "910849489",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 89,
+     "tip": "00000066a8ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14450573,
+     "reorgs": 0,
+     "work": "910849489",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 89,
+     "tip": "00000066a8ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14450573,
+     "reorgs": 0,
+     "work": "910849489",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 89,
+     "tip": "00000066a8ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14450573,
+     "reorgs": 1,
+     "work": "910849489",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 89,
+     "tip": "00000066a8ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 14450573,
+     "reorgs": 0,
+     "work": "910849489",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 385.4,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 90,
+     "tip": "000000b93607",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15416802,
+     "reorgs": 0,
+     "work": "925300062",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 90,
+     "tip": "000000b93607",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15416802,
+     "reorgs": 0,
+     "work": "925300062",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 90,
+     "tip": "000000b93607",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15416802,
+     "reorgs": 0,
+     "work": "925300062",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 90,
+     "tip": "000000b93607",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15416802,
+     "reorgs": 1,
+     "work": "925300062",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 90,
+     "tip": "000000b93607",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15416802,
+     "reorgs": 0,
+     "work": "925300062",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 390.6,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 92,
+     "tip": "00000037f5c3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15668809,
+     "reorgs": 0,
+     "work": "957210600",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 92,
+     "tip": "00000037f5c3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15668809,
+     "reorgs": 0,
+     "work": "957210600",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 92,
+     "tip": "00000037f5c3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15668809,
+     "reorgs": 0,
+     "work": "957210600",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 92,
+     "tip": "00000037f5c3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15668809,
+     "reorgs": 1,
+     "work": "957210600",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 92,
+     "tip": "00000037f5c3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15668809,
+     "reorgs": 0,
+     "work": "957210600",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 395.8,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 92,
+     "tip": "00000037f5c3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15668809,
+     "reorgs": 0,
+     "work": "957210600",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 92,
+     "tip": "00000037f5c3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15668809,
+     "reorgs": 0,
+     "work": "957210600",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 92,
+     "tip": "00000037f5c3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15668809,
+     "reorgs": 0,
+     "work": "957210600",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 92,
+     "tip": "00000037f5c3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15668809,
+     "reorgs": 1,
+     "work": "957210600",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 92,
+     "tip": "00000037f5c3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15668809,
+     "reorgs": 0,
+     "work": "957210600",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 400.9,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 94,
+     "tip": "000000361478",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15838824,
+     "reorgs": 0,
+     "work": "988793487",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 94,
+     "tip": "000000361478",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15838824,
+     "reorgs": 0,
+     "work": "988793487",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 94,
+     "tip": "000000361478",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15838824,
+     "reorgs": 0,
+     "work": "988793487",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 94,
+     "tip": "000000361478",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15838824,
+     "reorgs": 1,
+     "work": "988793487",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 94,
+     "tip": "000000361478",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 15838824,
+     "reorgs": 0,
+     "work": "988793487",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 406.1,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 95,
+     "tip": "000000e62b22",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16554511,
+     "reorgs": 0,
+     "work": "1004632311",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 95,
+     "tip": "000000e62b22",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16554511,
+     "reorgs": 0,
+     "work": "1004632311",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 95,
+     "tip": "000000e62b22",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16554511,
+     "reorgs": 0,
+     "work": "1004632311",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 95,
+     "tip": "000000e62b22",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16554511,
+     "reorgs": 1,
+     "work": "1004632311",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 95,
+     "tip": "000000e62b22",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16554511,
+     "reorgs": 0,
+     "work": "1004632311",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 411.2,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 99,
+     "tip": "0000009537fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16936867,
+     "reorgs": 0,
+     "work": "1069862921",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 99,
+     "tip": "0000009537fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16936867,
+     "reorgs": 0,
+     "work": "1069862921",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 99,
+     "tip": "0000009537fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16936867,
+     "reorgs": 0,
+     "work": "1069862921",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 99,
+     "tip": "0000009537fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16936867,
+     "reorgs": 1,
+     "work": "1069862921",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 99,
+     "tip": "0000009537fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 16936867,
+     "reorgs": 0,
+     "work": "1069862921",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 416.4,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 101,
+     "tip": "000000e8f471",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 19277638,
+     "reorgs": 0,
+     "work": "1104843772",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 101,
+     "tip": "000000e8f471",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 19277638,
+     "reorgs": 0,
+     "work": "1104843772",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 101,
+     "tip": "000000e8f471",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 19277638,
+     "reorgs": 0,
+     "work": "1104843772",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 101,
+     "tip": "000000e8f471",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 19277638,
+     "reorgs": 1,
+     "work": "1104843772",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 101,
+     "tip": "000000e8f471",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 19277638,
+     "reorgs": 0,
+     "work": "1104843772",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 421.6,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 104,
+     "tip": "000000073609",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 22502215,
+     "reorgs": 0,
+     "work": "1166556227",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 104,
+     "tip": "000000073609",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 22502215,
+     "reorgs": 0,
+     "work": "1166556227",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 104,
+     "tip": "000000073609",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 22502215,
+     "reorgs": 0,
+     "work": "1166556227",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 104,
+     "tip": "000000073609",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 22502215,
+     "reorgs": 1,
+     "work": "1166556227",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 104,
+     "tip": "000000073609",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 22502215,
+     "reorgs": 0,
+     "work": "1166556227",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 426.8,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 108,
+     "tip": "0000009da0a1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28126171,
+     "reorgs": 0,
+     "work": "1263030317",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 108,
+     "tip": "0000009da0a1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28126171,
+     "reorgs": 0,
+     "work": "1263030317",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 108,
+     "tip": "0000009da0a1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28126171,
+     "reorgs": 0,
+     "work": "1263030317",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 108,
+     "tip": "0000009da0a1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28126171,
+     "reorgs": 1,
+     "work": "1263030317",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 108,
+     "tip": "0000009da0a1",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28126171,
+     "reorgs": 0,
+     "work": "1263030317",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 431.9,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 110,
+     "tip": "0000003e3387",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 33235289,
+     "reorgs": 0,
+     "work": "1321613803",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 110,
+     "tip": "0000003e3387",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 33235289,
+     "reorgs": 0,
+     "work": "1321613803",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 110,
+     "tip": "0000003e3387",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 33235289,
+     "reorgs": 0,
+     "work": "1321613803",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 110,
+     "tip": "0000003e3387",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 33235289,
+     "reorgs": 1,
+     "work": "1321613803",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 110,
+     "tip": "0000003e3387",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 33235289,
+     "reorgs": 0,
+     "work": "1321613803",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 437.1,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 111,
+     "tip": "0000006eb739",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 35576363,
+     "reorgs": 0,
+     "work": "1354849092",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 111,
+     "tip": "0000006eb739",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 35576363,
+     "reorgs": 0,
+     "work": "1354849092",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 111,
+     "tip": "0000006eb739",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 35576363,
+     "reorgs": 0,
+     "work": "1354849092",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 111,
+     "tip": "0000006eb739",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 35576363,
+     "reorgs": 1,
+     "work": "1354849092",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 111,
+     "tip": "0000006eb739",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 35576363,
+     "reorgs": 0,
+     "work": "1354849092",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 442.3,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 112,
+     "tip": "00000039df11",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 39193958,
+     "reorgs": 0,
+     "work": "1390425455",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 112,
+     "tip": "00000039df11",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 39193958,
+     "reorgs": 0,
+     "work": "1390425455",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 112,
+     "tip": "00000039df11",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 39193958,
+     "reorgs": 0,
+     "work": "1390425455",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 112,
+     "tip": "00000039df11",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 39193958,
+     "reorgs": 1,
+     "work": "1390425455",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 112,
+     "tip": "00000039df11",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 39193958,
+     "reorgs": 0,
+     "work": "1390425455",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 447.5,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 113,
+     "tip": "00000001b270",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 40020984,
+     "reorgs": 0,
+     "work": "1429619413",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 113,
+     "tip": "00000001b270",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 40020984,
+     "reorgs": 0,
+     "work": "1429619413",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 113,
+     "tip": "00000001b270",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 40020984,
+     "reorgs": 0,
+     "work": "1429619413",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 113,
+     "tip": "00000001b270",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 40020984,
+     "reorgs": 1,
+     "work": "1429619413",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 113,
+     "tip": "00000001b270",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 40020984,
+     "reorgs": 0,
+     "work": "1429619413",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 452.6,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 113,
+     "tip": "00000001b270",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 40020984,
+     "reorgs": 0,
+     "work": "1429619413",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 113,
+     "tip": "00000001b270",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 40020984,
+     "reorgs": 0,
+     "work": "1429619413",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 113,
+     "tip": "00000001b270",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 40020984,
+     "reorgs": 0,
+     "work": "1429619413",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 113,
+     "tip": "00000001b270",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 40020984,
+     "reorgs": 1,
+     "work": "1429619413",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 113,
+     "tip": "00000001b270",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 40020984,
+     "reorgs": 0,
+     "work": "1429619413",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 457.8,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 116,
+     "tip": "00000033818c",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 39721140,
+     "reorgs": 0,
+     "work": "1552374481",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 116,
+     "tip": "00000033818c",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 39721140,
+     "reorgs": 0,
+     "work": "1552374481",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 116,
+     "tip": "00000033818c",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 39721140,
+     "reorgs": 0,
+     "work": "1552374481",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 116,
+     "tip": "00000033818c",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 39721140,
+     "reorgs": 1,
+     "work": "1552374481",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 116,
+     "tip": "00000033818c",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 39721140,
+     "reorgs": 0,
+     "work": "1552374481",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 463.0,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 117,
+     "tip": "00000021493a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37221625,
+     "reorgs": 0,
+     "work": "1592095621",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 117,
+     "tip": "00000021493a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37221625,
+     "reorgs": 0,
+     "work": "1592095621",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 117,
+     "tip": "00000021493a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37221625,
+     "reorgs": 0,
+     "work": "1592095621",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 117,
+     "tip": "00000021493a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37221625,
+     "reorgs": 1,
+     "work": "1592095621",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 117,
+     "tip": "00000021493a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37221625,
+     "reorgs": 0,
+     "work": "1592095621",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 468.3,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 120,
+     "tip": "0000001e686d",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 43168501,
+     "reorgs": 0,
+     "work": "1712916337",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 120,
+     "tip": "0000001e686d",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 43168501,
+     "reorgs": 0,
+     "work": "1712916337",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 120,
+     "tip": "0000001e686d",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 43168501,
+     "reorgs": 0,
+     "work": "1712916337",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 120,
+     "tip": "0000001e686d",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 43168501,
+     "reorgs": 1,
+     "work": "1712916337",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 120,
+     "tip": "0000001e686d",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 43168501,
+     "reorgs": 0,
+     "work": "1712916337",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 473.5,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 121,
+     "tip": "00000029c216",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 42928680,
+     "reorgs": 0,
+     "work": "1756084838",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 121,
+     "tip": "00000029c216",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 42928680,
+     "reorgs": 0,
+     "work": "1756084838",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 121,
+     "tip": "00000029c216",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 42928680,
+     "reorgs": 0,
+     "work": "1756084838",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 121,
+     "tip": "00000029c216",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 42928680,
+     "reorgs": 1,
+     "work": "1756084838",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 121,
+     "tip": "00000029c216",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 42928680,
+     "reorgs": 0,
+     "work": "1756084838",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 478.6,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 124,
+     "tip": "0000001e7ac9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 51047818,
+     "reorgs": 0,
+     "work": "1895797961",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 124,
+     "tip": "0000001e7ac9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 51047818,
+     "reorgs": 0,
+     "work": "1895797961",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 124,
+     "tip": "0000001e7ac9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 51047818,
+     "reorgs": 0,
+     "work": "1895797961",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 124,
+     "tip": "0000001e7ac9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 51047818,
+     "reorgs": 1,
+     "work": "1895797961",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 124,
+     "tip": "0000001e7ac9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 51047818,
+     "reorgs": 0,
+     "work": "1895797961",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 483.9,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 125,
+     "tip": "000000481d91",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 55277474,
+     "reorgs": 0,
+     "work": "1946845779",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 125,
+     "tip": "000000481d91",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 55277474,
+     "reorgs": 0,
+     "work": "1946845779",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 125,
+     "tip": "000000481d91",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 55277474,
+     "reorgs": 0,
+     "work": "1946845779",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 125,
+     "tip": "000000481d91",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 55277474,
+     "reorgs": 1,
+     "work": "1946845779",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 125,
+     "tip": "000000481d91",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 55277474,
+     "reorgs": 0,
+     "work": "1946845779",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 489.0,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 126,
+     "tip": "000000450aa3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 60049426,
+     "reorgs": 0,
+     "work": "2002123253",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 126,
+     "tip": "000000450aa3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 60049426,
+     "reorgs": 0,
+     "work": "2002123253",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 126,
+     "tip": "000000450aa3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 60049426,
+     "reorgs": 0,
+     "work": "2002123253",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 126,
+     "tip": "000000450aa3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 60049426,
+     "reorgs": 1,
+     "work": "2002123253",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 126,
+     "tip": "000000450aa3",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 60049426,
+     "reorgs": 0,
+     "work": "2002123253",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 494.3,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 1,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 499.5,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 1,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 504.7,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 1,
+     "work": "2062172679",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 127,
+     "tip": "00000005e2fc",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62137778,
+     "reorgs": 0,
+     "work": "2062172679",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 509.9,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 128,
+     "tip": "0000002decf9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 67452301,
+     "reorgs": 0,
+     "work": "2124310457",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 128,
+     "tip": "0000002decf9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 67452301,
+     "reorgs": 0,
+     "work": "2124310457",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 128,
+     "tip": "0000002decf9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 67452301,
+     "reorgs": 0,
+     "work": "2124310457",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 128,
+     "tip": "0000002decf9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 67452301,
+     "reorgs": 1,
+     "work": "2124310457",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 128,
+     "tip": "0000002decf9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 67452301,
+     "reorgs": 0,
+     "work": "2124310457",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 515.1,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 1,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 520.3,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 1,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 525.5,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 1,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 530.8,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 1,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 536.0,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 1,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 541.3,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 1,
+     "work": "2254135238",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 130,
+     "tip": "000000374f85",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 62956504,
+     "reorgs": 0,
+     "work": "2254135238",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 546.5,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 131,
+     "tip": "0000003035cd",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 52988842,
+     "reorgs": 0,
+     "work": "2317091742",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 131,
+     "tip": "0000003035cd",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 52988842,
+     "reorgs": 0,
+     "work": "2317091742",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 131,
+     "tip": "0000003035cd",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 52988842,
+     "reorgs": 0,
+     "work": "2317091742",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 131,
+     "tip": "0000003035cd",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 52988842,
+     "reorgs": 1,
+     "work": "2317091742",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 131,
+     "tip": "0000003035cd",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 52988842,
+     "reorgs": 0,
+     "work": "2317091742",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 551.7,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 132,
+     "tip": "0000004bbc9a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 51199276,
+     "reorgs": 0,
+     "work": "2370080584",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 132,
+     "tip": "0000004bbc9a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 51199276,
+     "reorgs": 0,
+     "work": "2370080584",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 132,
+     "tip": "0000004bbc9a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 51199276,
+     "reorgs": 0,
+     "work": "2370080584",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 132,
+     "tip": "0000004bbc9a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 51199276,
+     "reorgs": 1,
+     "work": "2370080584",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 132,
+     "tip": "0000004bbc9a",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 51199276,
+     "reorgs": 0,
+     "work": "2370080584",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 557.0,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 1,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 562.3,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 1,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 567.6,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 1,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 572.8,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 1,
+     "work": "2421279860",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 133,
+     "tip": "0000002a37f9",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 48901640,
+     "reorgs": 0,
+     "work": "2421279860",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 578.1,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 134,
+     "tip": "00000048d480",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38341919,
+     "reorgs": 0,
+     "work": "2470181500",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 134,
+     "tip": "00000048d480",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38341919,
+     "reorgs": 0,
+     "work": "2470181500",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 134,
+     "tip": "00000048d480",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38341919,
+     "reorgs": 0,
+     "work": "2470181500",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 134,
+     "tip": "00000048d480",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38341919,
+     "reorgs": 1,
+     "work": "2470181500",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 134,
+     "tip": "00000048d480",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38341919,
+     "reorgs": 0,
+     "work": "2470181500",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 583.4,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 134,
+     "tip": "00000048d480",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38341919,
+     "reorgs": 0,
+     "work": "2470181500",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 134,
+     "tip": "00000048d480",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38341919,
+     "reorgs": 0,
+     "work": "2470181500",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 134,
+     "tip": "00000048d480",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38341919,
+     "reorgs": 0,
+     "work": "2470181500",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 134,
+     "tip": "00000048d480",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38341919,
+     "reorgs": 1,
+     "work": "2470181500",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 134,
+     "tip": "00000048d480",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38341919,
+     "reorgs": 0,
+     "work": "2470181500",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 588.7,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 135,
+     "tip": "0000003392e7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38940798,
+     "reorgs": 0,
+     "work": "2508523419",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 135,
+     "tip": "0000003392e7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38940798,
+     "reorgs": 0,
+     "work": "2508523419",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 135,
+     "tip": "0000003392e7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38940798,
+     "reorgs": 0,
+     "work": "2508523419",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 135,
+     "tip": "0000003392e7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38940798,
+     "reorgs": 1,
+     "work": "2508523419",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 135,
+     "tip": "0000003392e7",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 38940798,
+     "reorgs": 0,
+     "work": "2508523419",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 594.0,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 1,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 599.3,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 1,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 604.6,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 1,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 609.9,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 1,
+     "work": "2547464217",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 136,
+     "tip": "000000350a00",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 37380264,
+     "reorgs": 0,
+     "work": "2547464217",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 615.2,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 139,
+     "tip": "0000001ab69e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30756095,
+     "reorgs": 0,
+     "work": "2647996373",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 139,
+     "tip": "0000001ab69e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30756095,
+     "reorgs": 0,
+     "work": "2647996373",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 139,
+     "tip": "0000001ab69e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30756095,
+     "reorgs": 0,
+     "work": "2647996373",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 139,
+     "tip": "0000001ab69e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30756095,
+     "reorgs": 1,
+     "work": "2647996373",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 139,
+     "tip": "0000001ab69e",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30756095,
+     "reorgs": 0,
+     "work": "2647996373",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 620.4,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 140,
+     "tip": "0000007af644",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 27540782,
+     "reorgs": 0,
+     "work": "2678752468",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 140,
+     "tip": "0000007af644",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 27540782,
+     "reorgs": 0,
+     "work": "2678752468",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 140,
+     "tip": "0000007af644",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 27540782,
+     "reorgs": 0,
+     "work": "2678752468",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 140,
+     "tip": "0000007af644",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 27540782,
+     "reorgs": 1,
+     "work": "2678752468",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 140,
+     "tip": "0000007af644",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 27540782,
+     "reorgs": 0,
+     "work": "2678752468",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 625.7,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 141,
+     "tip": "00000075a2ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28608828,
+     "reorgs": 0,
+     "work": "2706293250",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 141,
+     "tip": "00000075a2ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28608828,
+     "reorgs": 0,
+     "work": "2706293250",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 141,
+     "tip": "00000075a2ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28608828,
+     "reorgs": 0,
+     "work": "2706293250",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 141,
+     "tip": "00000075a2ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28608828,
+     "reorgs": 1,
+     "work": "2706293250",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 141,
+     "tip": "00000075a2ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28608828,
+     "reorgs": 0,
+     "work": "2706293250",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 631.1,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 141,
+     "tip": "00000075a2ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28608828,
+     "reorgs": 0,
+     "work": "2706293250",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 141,
+     "tip": "00000075a2ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28608828,
+     "reorgs": 0,
+     "work": "2706293250",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 141,
+     "tip": "00000075a2ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28608828,
+     "reorgs": 0,
+     "work": "2706293250",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 141,
+     "tip": "00000075a2ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28608828,
+     "reorgs": 1,
+     "work": "2706293250",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 141,
+     "tip": "00000075a2ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28608828,
+     "reorgs": 0,
+     "work": "2706293250",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 636.3,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 142,
+     "tip": "000000314863",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29736569,
+     "reorgs": 0,
+     "work": "2734902078",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 142,
+     "tip": "000000314863",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29736569,
+     "reorgs": 0,
+     "work": "2734902078",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 142,
+     "tip": "000000314863",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29736569,
+     "reorgs": 0,
+     "work": "2734902078",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 142,
+     "tip": "000000314863",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29736569,
+     "reorgs": 1,
+     "work": "2734902078",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 142,
+     "tip": "000000314863",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29736569,
+     "reorgs": 0,
+     "work": "2734902078",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 641.6,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 143,
+     "tip": "0000000b297b",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30637841,
+     "reorgs": 0,
+     "work": "2764638647",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 143,
+     "tip": "0000000b297b",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30637841,
+     "reorgs": 0,
+     "work": "2764638647",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 143,
+     "tip": "0000000b297b",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30637841,
+     "reorgs": 0,
+     "work": "2764638647",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 143,
+     "tip": "0000000b297b",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30637841,
+     "reorgs": 1,
+     "work": "2764638647",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 143,
+     "tip": "0000000b297b",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30637841,
+     "reorgs": 0,
+     "work": "2764638647",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 646.9,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 145,
+     "tip": "000000353b09",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29012818,
+     "reorgs": 0,
+     "work": "2825475428",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 145,
+     "tip": "000000353b09",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29012818,
+     "reorgs": 0,
+     "work": "2825475428",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 145,
+     "tip": "000000353b09",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29012818,
+     "reorgs": 0,
+     "work": "2825475428",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 145,
+     "tip": "000000353b09",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29012818,
+     "reorgs": 1,
+     "work": "2825475428",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 145,
+     "tip": "000000353b09",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29012818,
+     "reorgs": 0,
+     "work": "2825475428",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 652.3,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 1,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 657.6,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 1,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 662.8,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 1,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 668.2,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 1,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 673.5,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 1,
+     "work": "2854488246",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 146,
+     "tip": "000000884f32",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 28832519,
+     "reorgs": 0,
+     "work": "2854488246",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 678.8,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 147,
+     "tip": "0000000175ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29458330,
+     "reorgs": 0,
+     "work": "2883320765",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 147,
+     "tip": "0000000175ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29458330,
+     "reorgs": 0,
+     "work": "2883320765",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 147,
+     "tip": "0000000175ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29458330,
+     "reorgs": 0,
+     "work": "2883320765",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 147,
+     "tip": "0000000175ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29458330,
+     "reorgs": 1,
+     "work": "2883320765",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 147,
+     "tip": "0000000175ae",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 29458330,
+     "reorgs": 0,
+     "work": "2883320765",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 684.1,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 1,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 689.4,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 1,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 694.7,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 1,
+     "work": "2912779095",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 148,
+     "tip": "0000006cdff4",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30151043,
+     "reorgs": 0,
+     "work": "2912779095",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 700.1,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 1,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 705.4,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 1,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 710.8,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 1,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 716.0,
+   "scenario": "difficulty",
+   "nodes": {
+    "n1": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 1,
+     "work": "2942930138",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 149,
+     "tip": "0000001e7aef",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 30283434,
+     "reorgs": 0,
+     "work": "2942930138",
+     "sync": "synced"
+    }
+   }
+  },
+  {
+   "t": 721.3,
+   "scenario": "final",
+   "nodes": {
+    "n1": {
+     "height": 150,
+     "tip": "0000006c5109",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 25805293,
+     "reorgs": 0,
+     "work": "2973213572",
+     "sync": "synced"
+    },
+    "n2": {
+     "height": 150,
+     "tip": "0000006c5109",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 25805293,
+     "reorgs": 0,
+     "work": "2973213572",
+     "sync": "synced"
+    },
+    "n3": {
+     "height": 150,
+     "tip": "0000006c5109",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 25805293,
+     "reorgs": 0,
+     "work": "2973213572",
+     "sync": "synced"
+    },
+    "n4": {
+     "height": 150,
+     "tip": "0000006c5109",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 25805293,
+     "reorgs": 1,
+     "work": "2973213572",
+     "sync": "synced"
+    },
+    "n5": {
+     "height": 150,
+     "tip": "0000006c5109",
+     "peers": 4,
+     "mempool": 0,
+     "difficulty": 25805293,
+     "reorgs": 0,
+     "work": "2973213572",
+     "sync": "synced"
+    }
+   }
+  }
+ ]
+}

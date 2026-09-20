@@ -48,3 +48,11 @@ Databases from those versions are refused, never modified.
 
 `SHA256SUMS.txt` lists every artifact. Artifacts are **not code-signed** and the build is not reproducible. Compare hashes
 against a copy obtained from a channel you trust before running anything.
+
+## Late fix before tagging
+
+A stress run of the extracted source archive exposed a flaky test (about 3 failures in 16 runs under CPU load). Cause: a real
+P2P bug. When two nodes dialed each other at the same instant, each rejected the other's connection as a duplicate and the
+link was lost. Both sides now keep the connection dialed by the lower node id. Regression test:
+`test_simultaneous_dials_leave_exactly_one_connection_not_zero` (fails on the old code). After the fix: 0 failures in 20
+loaded runs, 614 tests passing, and the private testnet again 60/60 (`docs/reports/private-testnet-20260919-1927.md`).

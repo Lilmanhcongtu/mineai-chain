@@ -50,3 +50,4 @@ logs/
 .vscode/
 .DS_Store
 Thumbs.db
+release/

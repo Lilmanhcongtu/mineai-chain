@@ -362,21 +362,31 @@ class P2PNode:
             raise P.ProtocolError("connected to self", penalty=0)
         if self.is_banned(d["node_id"], peer.ip if not _is_loopback(peer.ip) else None):
             raise P.ProtocolError("banned peer", penalty=0)
-        if d["node_id"] in self.peers:
-            raise P.ProtocolError("duplicate connection", penalty=0)
-        if len(self.peers) >= cfg.max_peers:
+        if len(self.peers) >= cfg.max_peers and d["node_id"] not in self.peers:
             raise P.ProtocolError("peer table full", penalty=0)
         peer.node_id, peer.version = d["node_id"], version
         peer.height, peer.tip_hash, peer.total_work = d["height"], d["tip_hash"], int(d["total_work"])
         if d["listen_port"]:
             peer.listen_port = d["listen_port"]
 
+    def _preferred(self, peer: Peer) -> bool:
+        dialer = peer.node_id if peer.inbound else self.node_id
+        return dialer == min(self.node_id, peer.node_id)
+
     async def _run_peer(self, peer: Peer, dialed: str | None = None) -> None:
         cfg = self.cfg
         try:
             await self._handshake(peer)
-            if peer.node_id in self.peers:               # lost a race between two simultaneous dials
-                raise P.ProtocolError("duplicate connection", penalty=0)
+            existing = self.peers.get(peer.node_id)
+            if existing is not None:
+                # Two simultaneous dials (A->B and B->A) would each be rejected as a duplicate by the other side,
+                # leaving no connection at all. Both sides therefore apply the same rule: keep the connection that
+                # was dialed by the node with the lower id.
+                if self._preferred(peer) and not self._preferred(existing):
+                    del self.peers[peer.node_id]
+                    await existing.close()
+                else:
+                    raise P.ProtocolError("duplicate connection", penalty=0)
             self.peers[peer.node_id] = peer
             if peer.advertised:
                 self._remember(peer.advertised)

@@ -189,3 +189,23 @@ def test_a_transaction_burst_across_a_mesh_bans_nobody_and_reaches_every_node(tm
                 assert total(n, "p2p_peers_banned") == 0 and total(n, "p2p_penalty_points") == 0, n.node_id
                 assert len(n.peers) >= 2                                        # nobody lost their peers
     run(scenario())
+
+
+def test_simultaneous_dials_leave_exactly_one_connection_not_zero(tmp_path):
+    """Regression: A->B and B->A at the same instant used to be rejected as duplicates by BOTH sides, leaving no link."""
+    async def scenario():
+        async with Cluster(tmp_path) as c:
+            a = await c.start("a")
+            b = await c.start("b")
+            for _ in range(5):
+                tasks = [asyncio.create_task(a._connect(addr(b))), asyncio.create_task(b._connect(addr(a)))]
+                await until(lambda: a.node_id in b.peers and b.node_id in a.peers, timeout=10, msg="linked")
+                await asyncio.sleep(0.3)
+                assert b.node_id in a.peers and a.node_id in b.peers      # the surviving connection is the same one
+                assert a.peers[b.node_id].inbound != b.peers[a.node_id].inbound
+                for peer in list(a.peers.values()):
+                    await peer.close()
+                await until(lambda: not a.peers and not b.peers, timeout=10, msg="unlinked")
+                for t in tasks:
+                    t.cancel()
+    run(scenario())
