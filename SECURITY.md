@@ -5,9 +5,10 @@ independently audited, and must never hold real monetary value.**
 
 ## Reporting a vulnerability
 
-Do not open a public issue for security problems. Contact the project owner privately with a description,
+Do not open a public issue for security problems. Email **security@mineai.dev** with a description,
 affected version/commit, and reproduction steps. Never include real private keys, passwords or wallet
-files in a report. (A dedicated contact address and response process will be published before any public testnet.)
+files in a report. (A written response process, with acknowledgement and fix timelines, will be published before any
+public testnet.)
 
 ## Never share
 
@@ -50,4 +51,4 @@ like `password`, `private_key`, `secret`, `mnemonic` or `seed`.
 Only the current `main` development line; the testnet release candidate is 0.2.0rc1.
 
 Status of the release candidate: see `docs/SECURITY_CHECKLIST.md` (self-assessment, no independent audit) and `docs/KNOWN_LIMITATIONS.md`.
-A vulnerability-reporting contact has **not yet been defined**; it must exist before any public launch.
+The vulnerability-reporting contact is **security@mineai.dev**. A written response process (who answers, target times, how fixes are disclosed) has **not yet been defined**; it must exist before any public launch.
