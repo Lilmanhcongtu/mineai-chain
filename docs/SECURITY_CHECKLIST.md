@@ -72,8 +72,8 @@ place; this checklist is a self-assessment.**
 | Checksums published for every artifact | DONE | `SHA256SUMS.txt` |
 | **Signed releases** | **OPEN** | no signing key/certificate; needs a maintainer-held key and a published public key |
 | **Reproducible / verifiable builds** | **OPEN** | |
-| **Linux build and test** | **OPEN** | never run on Linux |
-| Continuous integration | OPEN | |
+| **Linux build and test** | **PARTIAL** | full test suite and the `install.sh` walkthrough pass in CI on Ubuntu (Python 3.10/3.12), `.github/workflows/ci.yml`; other distributions, macOS, a real host and the systemd unit not tried |
+| Continuous integration | PARTIAL | GitHub Actions runs the tests on Ubuntu and Windows (Python 3.10/3.12) and a Linux install walkthrough on every push (`.github/workflows/ci.yml`); no dependency scanning, no release automation, no signing |
 | Dependency pinning / vulnerability scanning (`pip-audit`) | OPEN | version ranges only |
 | **Vulnerability reporting address and response process** | **OPEN** | must exist before any public launch |
 | Incident-response and rollback/reset process | OPEN | runbook covers node-level recovery only |

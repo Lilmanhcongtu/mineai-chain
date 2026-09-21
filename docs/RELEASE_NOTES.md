@@ -16,7 +16,7 @@ infrastructure and no public network yet. See `LAUNCH_CRITERIA.md` for what is s
 | Wallet | Encrypted keys (scrypt + AES-GCM), locking with auto-lock, verified backup/restore, atomic password change, transfer preview, history, interactive shell. No recovery phrase |
 | Miner | User-started CPU miner, pluggable backend, stale-work detection, clear rejection reasons |
 | Explorer / API | Read-only explorer (blocks, transactions, addresses, search), versioned `/api/v1`, Prometheus `/metrics` |
-| Packaging | Windows package (unsigned) with installer and checksums; Linux source install scripts (**not verified on Linux**); source archive |
+| Packaging | Windows package (unsigned) with installer and checksums; Linux source install scripts (**not verified on Linux at release**; since verified in CI on Ubuntu, see `KNOWN_LIMITATIONS.md`); source archive |
 
 ## Testnet identity (frozen for this release)
 
@@ -35,7 +35,7 @@ infrastructure and no public network yet. See `LAUNCH_CRITERIA.md` for what is s
 
 ## What is NOT verified
 
-Linux (no Linux environment was available), any real multi-host network, latency/packet-loss/clock-skew, disk-full and
+Linux at release time (no Linux environment was available; Ubuntu has since been verified in CI, see `KNOWN_LIMITATIONS.md`), any real multi-host network, latency/packet-loss/clock-skew, disk-full and
 power-loss failures, hostile-majority behaviour, long-duration operation (the 60-90 day soak), and external security review.
 See `KNOWN_LIMITATIONS.md` and `SECURITY_CHECKLIST.md`.
 

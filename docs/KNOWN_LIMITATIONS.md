@@ -39,7 +39,7 @@ An honest list of what this release does **not** do or has **not** been shown to
 
 * **Artifacts are unsigned** (no code-signing certificate, no signing key); SmartScreen/antivirus may warn.
 * **Builds are not reproducible**; the Windows package was built on the developer's machine.
-* **No continuous integration**; tests run locally.
+* **Continuous integration is basic**: GitHub Actions runs the tests on Ubuntu and Windows (Python 3.10/3.12) and a Linux install walkthrough on every push. There is no dependency scanning, no release automation and no signing.
 * **No public seed nodes, no hosted infrastructure, no status page, no incident-response process yet.**
 * **Vulnerability reporting contact is not yet defined** (`SECURITY.md` says so).
 * Metrics endpoints are unauthenticated (they reveal height, peers, uptime and abuse counters, nothing sensitive).
