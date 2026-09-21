@@ -27,7 +27,7 @@ sudo adduser --system --group --home /home/mineai --shell /bin/bash mineai
 sudo mkdir -p /var/lib/mineai /etc/mineai && sudo chown mineai:mineai /var/lib/mineai
 
 sudo -u mineai -H sh -c '
-  git clone <YOUR-REPO-URL> ~/mineai-src && cd ~/mineai-src && sh packaging/linux/install.sh'
+  git clone https://github.com/Lilmanhcongtu/mineai-chain.git ~/mineai-src && cd ~/mineai-src && sh packaging/linux/install.sh'
 ```
 
 `install.sh` creates a virtualenv in `~/.local/share/mineai` and the wrapper `~/.local/bin/mineai-node`.

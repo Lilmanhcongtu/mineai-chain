@@ -40,7 +40,7 @@ Requires Python 3.10 or newer (`python3 --version`) with the `venv` module (on D
 CI runs this whole section on Ubuntu for every commit; other distributions and macOS have not been tried.
 
 ```bash
-tar xzf mineai-0.2.0rc1-source.tar.gz && cd mineai-0.2.0rc1      # or: git clone <repo> && cd MineAI
+tar xzf mineai-0.2.0rc1-source.tar.gz && cd mineai-0.2.0rc1      # or: git clone https://github.com/Lilmanhcongtu/mineai-chain.git && cd mineai-chain
 sh packaging/linux/install.sh
 export PATH="$HOME/.local/bin:$PATH"                              # if ~/.local/bin is not on your PATH yet
 ```

@@ -5,7 +5,8 @@ independently audited, and must never hold real monetary value.**
 
 ## Reporting a vulnerability
 
-Do not open a public issue for security problems. Email **security@mineai.dev** with a description,
+Do not open a public issue for security problems. Report it privately, either through GitHub
+(**Security tab → Report a vulnerability** on the repository) or by email to **security@mineai.dev**. Include a description,
 affected version/commit, and reproduction steps. Never include real private keys, passwords or wallet
 files in a report. (The response process, with best-effort acknowledgement and fix targets, is in `docs/VULNERABILITY_RESPONSE.md`.)
 
