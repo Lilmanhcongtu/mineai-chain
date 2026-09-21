@@ -9,7 +9,7 @@ and no paid infrastructure was created or is required to publish this candidate.
 | Separate wallet warning; testnet address separation; clear TESTNET labels | **MET** | `TMAI` addresses, banners on node/wallet/miner, explorer badge, API `label` |
 | No transfer of V0.1 balances; no monetary value | **MET** | incompatible network ids/prefixes/genesis; label and warnings say so |
 | Releases: Windows package, source archive, checksums, release notes, install and troubleshooting guides | **MET** | see `RELEASE_NOTES.md`, `INSTALL.md`, `TROUBLESHOOTING.md`; unsigned |
-| Linux releases | **NOT MET** | install scripts exist; nothing was built or tested on Linux |
+| Linux releases | **PARTIAL** | source install and the documented walkthrough pass in CI on Ubuntu (tests on Python 3.10/3.12); no Linux binaries or release artifacts, other distributions and macOS untried, systemd unit and VPS guide never run on a real host |
 | At least five nodes | **MET (privately)** | five processes on one machine in the private test network |
 | At least three independently hosted nodes | **NOT MET** | requires three operators/hosts; none exist |
 | Nodes remain synchronized | **PARTIAL** | shown for minutes to hours on one machine, not on independent hosts |
@@ -26,7 +26,7 @@ and no paid infrastructure was created or is required to publish this candidate.
 2. Decide the public announcement wording; keep the "no monetary value / may be reset" statement prominent.
 3. Define the vulnerability-reporting contact and an incident/reset process (`SECURITY_CHECKLIST.md`, OPEN items).
 4. Decide on release signing (a maintainer-held key with a published public key, or a code-signing certificate).
-5. Verify Linux (and ideally macOS) builds, or state clearly that only Windows is supported.
+5. Linux is verified in CI on Ubuntu (source install). Still open: run it on a real host (`DEPLOY_VPS.md`), and either verify macOS/other distributions or state clearly which platforms are supported.
 6. Run the private test program repeatedly and a longer soak before announcing.
 7. Decide, before the testnet is public, whether the testnet keeps the current emission rules (it does in this candidate).
 

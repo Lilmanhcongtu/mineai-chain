@@ -6,7 +6,7 @@ An honest list of what this release does **not** do or has **not** been shown to
 
 | Area | Status |
 |---|---|
-| Linux | **Never built or run on Linux.** The install scripts exist but are untested; no Linux binaries are provided. (No Linux environment was available during development.) |
+| Linux | **Verified only on GitHub Actions Ubuntu runners** (`ubuntu-latest`, Python 3.10 and 3.12): the full test suite passes there, and `packaging/linux/install.sh` plus the documented walkthrough (install, node, wallet, mine, balance, offline `mineai check`) runs end to end on every commit. **Not verified:** other distributions, macOS, a real long-running host, the systemd unit (`packaging/linux/mineai-node.service`) and `DEPLOY_VPS.md`. No Linux binaries are provided (source install only). |
 | Real networks | Only tested on one machine over loopback (private five-process network, plus in-process tests). No latency, jitter, packet loss, NAT, IPv6 or clock skew. |
 | Independent operators | No third-party node, miner or wallet user has run this. |
 | Long duration | The longest continuous run is minutes to hours, not the 60-90 days a public testnet needs. |
