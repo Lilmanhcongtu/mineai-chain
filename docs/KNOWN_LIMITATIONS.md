@@ -41,7 +41,7 @@ An honest list of what this release does **not** do or has **not** been shown to
 * **Builds are not reproducible**; the Windows package was built on the developer's machine.
 * **Continuous integration is basic**: GitHub Actions runs the tests on Ubuntu and Windows (Python 3.10/3.12) and a Linux install walkthrough on every push. There is no dependency scanning, no release automation and no signing.
 * **No public seed nodes, no hosted infrastructure, no status page, no incident-response process yet.**
-* **Vulnerability reporting:** the contact is security@mineai.dev (`SECURITY.md`), but there is no written response process yet (acknowledgement and fix timelines, disclosure policy).
+* **Vulnerability reporting:** the contact is security@mineai.dev (`SECURITY.md`), and a response process is drafted (`VULNERABILITY_RESPONSE.md`) but its timelines are not yet confirmed.
 * Metrics endpoints are unauthenticated (they reveal height, peers, uptime and abuse counters, nothing sensitive).
 * No API authentication; the HTTP API is meant for loopback or a private network. Mining endpoints answer loopback clients only, which a reverse proxy would defeat.
 

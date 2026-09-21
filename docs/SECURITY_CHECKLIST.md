@@ -75,7 +75,7 @@ place; this checklist is a self-assessment.**
 | **Linux build and test** | **PARTIAL** | full test suite and the `install.sh` walkthrough pass in CI on Ubuntu (Python 3.10/3.12), `.github/workflows/ci.yml`; other distributions, macOS, a real host and the systemd unit not tried |
 | Continuous integration | PARTIAL | GitHub Actions runs the tests on Ubuntu and Windows (Python 3.10/3.12) and a Linux install walkthrough on every push (`.github/workflows/ci.yml`); no dependency scanning, no release automation, no signing |
 | Dependency pinning / vulnerability scanning (`pip-audit`) | OPEN | version ranges only |
-| **Vulnerability reporting address and response process** | **PARTIAL** | address chosen: security@mineai.dev. A DNS check on 2026-09-21 found no MX records for mineai.dev, so the mailbox cannot receive mail yet. The written response process is still open. Both must be done before any public launch |
+| **Vulnerability reporting address and response process** | **PARTIAL** | address chosen: security@mineai.dev. A DNS check on 2026-09-21 found no MX records for mineai.dev, so the mailbox cannot receive mail yet. A response and incident process is drafted in `VULNERABILITY_RESPONSE.md`, but its timelines are unconfirmed proposals. The mailbox and the confirmed process must both be done before any public launch |
 | Incident-response and rollback/reset process | OPEN | runbook covers node-level recovery only |
 | **Independent security audit** | **OPEN** | |
 | Legal / compliance review of the public testnet | OPEN | not done; not legal advice |
