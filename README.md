@@ -10,6 +10,10 @@ Status: **0.2.0rc1, public testnet release candidate (not launched)** — see `d
 `docs/SECURITY_CHECKLIST.md` and `docs/LAUNCH_CRITERIA.md` first. See `PROTOCOL.md` for the exact rules, `TOKENOMICS.md`,
 `NETWORK.md`, `SECURITY.md` (including known limitations) and `CONTRIBUTING.md`.
 
+## License
+
+MIT, see `LICENSE`. The software comes with no warranty; the licence does not change the fact that this is test software for networks with no monetary value.
+
 ## What changed from V0.1
 
 * Integer-only money; deterministic binary encodings for signatures, txids, merkle root and block hash.
