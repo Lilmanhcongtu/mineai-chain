@@ -24,7 +24,7 @@ and no paid infrastructure was created or is required to publish this candidate.
 
 1. Host at least three seed/full nodes on independent machines and publish their addresses (`MINEAI_SEEDS`).
 2. Decide the public announcement wording; keep the "no monetary value / may be reset" statement prominent.
-3. The vulnerability-reporting contact is defined (security@mineai.dev). Still open: make sure that mailbox receives mail, and confirm the drafted response and incident/reset process (`VULNERABILITY_RESPONSE.md`, `SECURITY_CHECKLIST.md`).
+3. The vulnerability-reporting contact is defined (security@mineai.dev). Still open: make sure that mailbox receives mail, the response and incident/reset process is written (`VULNERABILITY_RESPONSE.md`).
 4. Decide on release signing (a maintainer-held key with a published public key, or a code-signing certificate).
 5. Linux is verified in CI on Ubuntu (source install). Still open: run it on a real host (`DEPLOY_VPS.md`), and either verify macOS/other distributions or state clearly which platforms are supported.
 6. Run the private test program repeatedly and a longer soak before announcing.

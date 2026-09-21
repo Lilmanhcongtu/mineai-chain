@@ -7,8 +7,7 @@ independently audited, and must never hold real monetary value.**
 
 Do not open a public issue for security problems. Email **security@mineai.dev** with a description,
 affected version/commit, and reproduction steps. Never include real private keys, passwords or wallet
-files in a report. (A **draft** response process, with proposed acknowledgement and fix timelines, is in
-`docs/VULNERABILITY_RESPONSE.md`; its numbers are not yet confirmed as commitments.)
+files in a report. (The response process, with best-effort acknowledgement and fix targets, is in `docs/VULNERABILITY_RESPONSE.md`.)
 
 ## Never share
 
@@ -51,4 +50,4 @@ like `password`, `private_key`, `secret`, `mnemonic` or `seed`.
 Only the current `main` development line; the testnet release candidate is 0.2.0rc1.
 
 Status of the release candidate: see `docs/SECURITY_CHECKLIST.md` (self-assessment, no independent audit) and `docs/KNOWN_LIMITATIONS.md`.
-The vulnerability-reporting contact is **security@mineai.dev**. A response process is **drafted but not yet confirmed** (`docs/VULNERABILITY_RESPONSE.md`: who answers, target times, disclosure, incident and reset steps); it must be confirmed before any public launch.
+The vulnerability-reporting contact is **security@mineai.dev**. The response process is in `docs/VULNERABILITY_RESPONSE.md` (targets, disclosure, incident and reset steps). The mailbox must be able to receive mail before any public launch.
